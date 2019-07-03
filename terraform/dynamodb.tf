@@ -13,7 +13,7 @@ resource "aws_dynamodb_table" "dataplattform" {
         name = "type"
         type = "S"
     }
-    tags {
+    tags = {
         Project = "Dataplattform"
     }
 }

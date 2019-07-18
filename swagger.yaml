@@ -32,6 +32,12 @@ paths:
           schema:
             type: integer
             format: int32
+        - name: just_url
+          in: query
+          description: Sett denne til true om du vil bare få tak i URLen og ikke de 25 nyeste datapunktene.
+          required: false
+          schema:
+            type: boolean
         - name: type
           in: path
           description: Hva slags datatype du vil hente ut.
@@ -59,7 +65,7 @@ paths:
         '400':
           description: Invalid status value
 servers:
-  - url: 'https://mbcuh0j1r4.execute-api.eu-central-1.amazonaws.com/dev'
+  - url: 'https://ji54uhowf8.execute-api.eu-central-1.amazonaws.com/dev'
 components:
   securitySchemes:
     api_key:

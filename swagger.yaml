@@ -8,15 +8,16 @@ info:
   title: Knowit dataplattform
 tags:
   - name: docs
-    description: Fetch alle dokumenter for en type
+    description: Fetch alle dokumenter for en type. Under så er det flere forskjellige typer, men husk at om du lager din egen type så er det bare å skrive get_docs/{type}, det er ikke bare de under som funker.  
+      Svaret fra alle disse requestene er en url som du igjen må requeste. Dette kan virke litt teit, men det er slik man må gjøre for å komme seg over 6MB grensen AWS Lambda payloads har. P.S Du må være authorized for å kjøre disse (trykk på hengelåsen over).
 paths:
   '/get_docs/{type}':
     get:
       tags:
         - docs
       summary: Henter rå data ved hjelp av type (og timestamps om du vil)
-      description: Svaret du får fra denne requesten er en url som du igjen må requeste. Dette kan virke litt teit, men det er slik man må gjøre for å komme seg over 6MB grensen AWS Lambda payloads har. Du må være authorized for å kjøre denne (trykk på hengelåsen over).
-      operationId: findPetsByStatus
+      description: Dette er et generelt eksempel.
+      operationId: get_docs
       parameters:
         - name: timestamp_from
           in: query
@@ -40,18 +41,212 @@ paths:
             type: boolean
         - name: type
           in: path
-          description: Hva slags datatype du vil hente ut.
+          description: Hva slags datatype du vil hente ut. Eksempel, GithubType, SlackType, EventRatingType, EventType, UBWType.
           required: true
-          explode: true
           schema:
             type: string
-            enum:
-              - GithubType
-              - SlackType
-              - EventRatingType
-              - EventType
-              - UBWType
-            default: SlackType
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Raw_doc'
+            
+        '400':
+          description: Invalid status value
+          
+  '/get_docs/GithubType':
+    get:
+      tags:
+        - docs
+      summary: Henter rå data fra Github
+      description: Alle data som er her nå er fra github.com/knowit.
+      operationId: get_docs-GithubType
+      parameters:
+        - name: timestamp_from
+          in: query
+          description: Timestamp fra når du vil hente ut docsene.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: timestamp_to
+          in: query
+          description: Timestamp til.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: just_url
+          in: query
+          description: Sett denne til true om du vil bare få tak i URLen og ikke de 25 nyeste datapunktene.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Raw_doc'
+            
+        '400':
+          description: Invalid status value
+          
+  '/get_docs/UBWType':
+    get:
+      tags:
+        - docs
+      summary: Henter rå data fra UBW
+      description: Dette er aggregerte antall fagtimer per uke i knowit objectnet.
+      operationId: get_docs-UBWType
+      parameters:
+        - name: timestamp_from
+          in: query
+          description: Timestamp fra når du vil hente ut docsene.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: timestamp_to
+          in: query
+          description: Timestamp til.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: just_url
+          in: query
+          description: Sett denne til true om du vil bare få tak i URLen og ikke de 25 nyeste datapunktene.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Raw_doc'
+            
+        '400':
+          description: Invalid status value
+  '/get_docs/SlackType':
+    get:
+      tags:
+        - docs
+      summary: Henter rå data fra Slack
+      description: Dette er hvilken kanal folk snakker i og tilhørende timestamp.
+      operationId: get_docs-SlackType
+      parameters:
+        - name: timestamp_from
+          in: query
+          description: Timestamp fra når du vil hente ut docsene.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: timestamp_to
+          in: query
+          description: Timestamp til.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: just_url
+          in: query
+          description: Sett denne til true om du vil bare få tak i URLen og ikke de 25 nyeste datapunktene.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Raw_doc'
+            
+        '400':
+          description: Invalid status value
+  '/get_docs/EventType':
+    get:
+      tags:
+        - docs
+      summary: Henter rå data fra et fagarrangement.
+      description: Det er ett datapunkt per fagarrangement som sier hvor mange som kom på arrangementet og hvilken faggruppe som sto bak det.
+      operationId: get_docs-EventType
+      parameters:
+        - name: timestamp_from
+          in: query
+          description: Timestamp fra når du vil hente ut docsene.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: timestamp_to
+          in: query
+          description: Timestamp til.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: just_url
+          in: query
+          description: Sett denne til true om du vil bare få tak i URLen og ikke de 25 nyeste datapunktene.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Raw_doc'
+            
+        '400':
+          description: Invalid status value
+  '/get_docs/EventRatingType':
+    get:
+      tags:
+        - docs
+      summary: Henter rå data fra en vurdering av fagarrangement.
+      description: Det er ett datapunkt per stemme på et fagarrangement.
+      operationId: get_docs-EventRatingType
+      parameters:
+        - name: timestamp_from
+          in: query
+          description: Timestamp fra når du vil hente ut docsene.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: timestamp_to
+          in: query
+          description: Timestamp til.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: just_url
+          in: query
+          description: Sett denne til true om du vil bare få tak i URLen og ikke de 25 nyeste datapunktene.
+          required: false
+          schema:
+            type: boolean
       responses:
         '200':
           description: successful operation
@@ -65,7 +260,7 @@ paths:
         '400':
           description: Invalid status value
 servers:
-  - url: 'https://ji54uhowf8.execute-api.eu-central-1.amazonaws.com/dev'
+  - url: "https://ez6t9nkg3d.execute-api.eu-central-1.amazonaws.com/test/"
 components:
   securitySchemes:
     api_key:

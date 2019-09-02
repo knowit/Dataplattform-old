@@ -86,6 +86,8 @@ class AbstractType:
                 columns_and_types += attr_name + " INT,\n"
             elif attr_type == float:
                 columns_and_types += attr_name + " DECIMAL(20,2),\n"
+            elif attr_type == bool:
+                columns_and_types += attr_name + " BOOL,\n"
             else:
                 print("Unsupported type.")
 

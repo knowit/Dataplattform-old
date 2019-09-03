@@ -3,6 +3,8 @@ service: dataplattform-structured-mysql
 custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
+  apikeys:
+    pull_data: ${ssm:dataplattform_${self:custom.stage}_pull_data_apikey}
   batch_job_lambda: ${self:custom.project}-batch_job_mysql
   database_name: Dataplattform
   database_port: 3306
@@ -30,6 +32,9 @@ provider:
   runtime: python3.7
   memorySize: 1024
   timeout: 60
+  apiKeys: # IMPORTANT: Due to a quirk with how serverless generates CloudFormation, please add new keys at the bottom
+    - name: ${self:custom.project}-pull_data-apikey
+      value: ${self:custom.apikeys.pull_data}
   stackTags:
     Project: ${self:custom.project}
   tags:
@@ -39,7 +44,7 @@ provider:
 package:
   individually: true
   exclude:
-    - "./**"
+  - "./**"
 
 functions:
   batch_job_mysql:
@@ -50,14 +55,14 @@ functions:
     role: batchJobRole
     package:
       include:
-        - 'batch_job_aurora/*.py'
-        - 'batch_job_aurora/data_types/*'
-        - 'batch_job_aurora/emoji/*'
+      - 'batch_job_aurora/*.py'
+      - 'batch_job_aurora/data_types/*'
+      - 'batch_job_aurora/emoji/*'
     environment:
       DATAPLATTFORM_AURORA_HOST:
         Fn::GetAtt:
-          - auroraCluster
-          - Endpoint.Address
+        - auroraCluster
+        - Endpoint.Address
       DATAPLATTFORM_AURORA_PORT: ${self:custom.database_port}
       DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
       DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
@@ -69,13 +74,41 @@ functions:
       DATAPLATTFORM_EVENT_CODE_TABLE:
         'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-name
     events:
-      - schedule: rate(1 hour)
+    - schedule: rate(1 hour)
     vpc:
       securityGroupIds:
-        - sg-2ca58644 # ON-LAN
+      - sg-2ca58644   # ON-LAN
       subnetIds:
-        - subnet-bd8400d5 # ON-LAN1
-        - subnet-9a4981e0 # ON-LAN2
+      - subnet-bd8400d5   # ON-LAN1
+      - subnet-9a4981e0   # ON-LAN2
+  pull_data_mysql:
+    handler: pull_data_aurora.handler
+    module: pull_data_aurora
+    name: ${self:custom.project}-pull-data-mysql
+    package:
+      include:
+        - 'pull_data_aurora/*.py'
+    environment:
+      DATAPLATTFORM_AURORA_HOST:
+        Fn::GetAtt:
+          - auroraCluster
+          - Endpoint.Address
+      DATAPLATTFORM_AURORA_PORT: ${self:custom.database_port}
+      DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
+      DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
+      DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
+      DATAPLATTFORM_FETCH_APIKEY: ${ssm:dataplattform_${self:custom.stage}_pull_data_apikey}
+    events:
+      - http:
+          path: pull_data_aurora/{data_type}
+          method: get
+          private: true fiyvh hk
+    vpc:
+      securityGroupIds:
+      - sg-2ca58644   # ON-LAN
+      subnetIds:
+      - subnet-bd8400d5   # ON-LAN1
+      - subnet-9a4981e0   # ON-LAN2
 
 resources:
   Resources:
@@ -86,25 +119,25 @@ resources:
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
-            - Effect: Allow
-              Principal:
-                Service:
-                  - lambda.amazonaws.com
-              Action: sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+            Action: sts:AssumeRole
         ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
         Policies:
-          - PolicyName: ${self:custom.project}-eventtable-readonly
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - dynamodb:GetItem
-                    - dynamodb:Scan
-                    - dynamodb:Query
-                  Resource:
-                    - 'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-arn
+        - PolicyName: ${self:custom.project}-eventtable-readonly
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:Query
+              Resource:
+              - 'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-arn
     auroraCluster:
       # TODO export cloudwatch logs?
       Type: AWS::RDS::DBCluster
@@ -123,12 +156,12 @@ resources:
         Port: 3306
         StorageEncrypted: true
         Tags:
-          - Key: Project
-            Value: ${self:custom.project}
+        - Key: Project
+          Value: ${self:custom.project}
         DBSubnetGroupName: 'default-vpc-02f9ab9c69358eb52'
         VpcSecurityGroupIds:
-          - 'sg-0c9b4ed623306c437' # DATAPLATTFORM-ALLOW-KNOWIT
-          - ${self:custom.securityGroups.${self:custom.stage}}
+        - 'sg-0c9b4ed623306c437'   # DATAPLATTFORM-ALLOW-KNOWIT
+        - ${self:custom.securityGroups.${self:custom.stage}}
     mysqlDBInstance:
       Type: AWS::RDS::DBInstance
       Properties:
@@ -142,23 +175,23 @@ resources:
         DBParameterGroupName: default.aurora-mysql5.7
         DBSubnetGroupName: default-vpc-02f9ab9c69358eb52
         Tags:
-          - Key: Project
-            Value: ${self:custom.project}
+        - Key: Project
+          Value: ${self:custom.project}
   Outputs:
     auroraClusterRWEndpoint:
       Description: "Read/write endpoint for aurora cluster"
       Value:
         Fn::GetAtt:
-          - auroraCluster
-          - Endpoint.Address
+        - auroraCluster
+        - Endpoint.Address
       Export:
         Name: ${self:custom.project}-aurora-endpoint-rw
     auroraClusterROEndpoint:
       Description: "Read only endpoint for aurora cluster"
       Value:
         Fn::GetAtt:
-          - auroraCluster
-          - ReadEndpoint.Address
+        - auroraCluster
+        - ReadEndpoint.Address
       Export:
         Name: ${self:custom.project}-aurora-endpoint-ro
     auroraDBUser:
@@ -176,5 +209,5 @@ resources:
 
 
 plugins:
-  - serverless-python-requirements
-  - serverless-stack-output
+- serverless-python-requirements
+- serverless-stack-output

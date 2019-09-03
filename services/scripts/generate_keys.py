@@ -12,6 +12,7 @@ keys = [
 
     "dataplattform_STAGE_fetch_apikey",
     "dataplattform_STAGE_batch_job_apikey",
+    "dataplattform_STAGE_pull_data_apikey",
 ]
 
 default_stages = ["prod", "test", "dev"]

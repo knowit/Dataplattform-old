@@ -17,7 +17,6 @@ const char* ssid = "";
 const char* password = "";
 const char* url = "https://[...].execute-api.eu-central-1.amazonaws.com/prod/dataplattform_ingest/EventRatingType";
 const char* ingest_api_key = "";
-Config.immediateStart = true;
 
 // Input pins for event code
 const int dips_input[6] = {14, 27, 26, 25, 33, 32};
@@ -38,6 +37,9 @@ void setup() {
     for (int i = 0; i < 6; i++) {
         pinMode(dips_input[i], INPUT);
     }
+
+    Config.immediateStart = true;
+    Portal.config(Config);
 
     Serial.println("Startup");
     connect_to_wifi();

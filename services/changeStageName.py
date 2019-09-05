@@ -13,13 +13,14 @@ def change_stage(serverless_file, new_stage):
         data = yaml.load(stream)
 
         #oppdaterer data
+        old_stage = data['provider']['stage']
         data['provider']['stage'] = new_stage
 
     #dumper data i fil
     with open(serverless_file, 'w') as stream:
         print("Oppdaterer "+serverless_file+"...")
         yaml.dump(data, stream)
-        print("Stage byttet fra "+data['provider']['stage']+" til "+new_stage+" i "+serverless_file)
+        print("Stage byttet fra "+old_stage+" til "+new_stage+" i "+serverless_file)
 
 
 if __name__ == "__main__":

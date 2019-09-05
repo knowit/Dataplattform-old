@@ -2,7 +2,7 @@
 
 read -p "Skriv inn stage (dev|test|prod|eget): "  inputStage
 while [[ $inputStage != @(dev|test|prod|eget) ]]; do
-    echo "Bruk enten dev, test eller prod"
+    echo "Bruk enten dev, test, prod eller eget"
     read -p "Skriv inn stage (dev|test|prod|eget): "  inputStage
 done
 
@@ -22,15 +22,16 @@ if [ $stageName == "eget" ]; then
     restApiList="aws apigateway get-api-keys"
     listing=$(eval "$restApiList")
     read -p "Skriv inn dine initialer, opptil fem tegn (a-z/0-9): "  inputInitials
+    stageName="dev"
     while true; do
         inputInitials=${inputInitials//[^a-zA-Z0-9_-]/_}
         inputInitials=${inputInitials//_}
         if [ "${#inputInitials}" -le 0 ]; then
             echo "Vennligst skriv inn minimum ett gyldig tegn!"
-            read -p "Skriv inn dine initialer, opptil tre tegn (a-z/0-9): "  inputInitials
+            read -p "Skriv inn dine initialer, opptil fem tegn (a-z/0-9): "  inputInitials
         elif [ "${#inputInitials}" -gt 5 ]; then
             echo "Vennligst begrens antall initaler til 5!"
-            read -p "Skriv inn dine initialer, opptil tre tegn (a-z/0-9): "  inputInitials
+            read -p "Skriv inn dine initialer, opptil fem tegn (a-z/0-9): "  inputInitials
         else
             echo "Du har skrevet inn '${inputInitials,,}' som initialer og ditt miljø vil da bli $stageName-${inputInitials,,}!"
             read -p  "Er dette riktig? [y/N] " confirmation
@@ -39,7 +40,7 @@ if [ $stageName == "eget" ]; then
             fi
             if [ ${confirmation,,} != "y" ]; then
                 echo "Du har valgt å bytte dine initialer!"
-                read -p "Skriv inn dine initialer, opptil tre tegn (a-z/0-9): "  inputInitials
+                read -p "Skriv inn dine initialer, opptil fem tegn (a-z/0-9): "  inputInitials
             else
                 break
             fi

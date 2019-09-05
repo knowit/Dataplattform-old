@@ -1,5 +1,9 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <AutoConnect.h>
+
+AutoConnect Portal;
+AutoConnectConfig Config;
 
 const int pin_r = 4;
 const int pin_g = 16;
@@ -13,6 +17,7 @@ const char* ssid = "";
 const char* password = "";
 const char* url = "https://[...].execute-api.eu-central-1.amazonaws.com/prod/dataplattform_ingest/EventRatingType";
 const char* ingest_api_key = "";
+Config.immediateStart = true;
 
 // Input pins for event code
 const int dips_input[6] = {14, 27, 26, 25, 33, 32};
@@ -47,7 +52,8 @@ void connect_to_wifi() {
     Serial.print("Password: ");
     Serial.println(password);
 
-    WiFi.begin(ssid, password);
+    //WiFi.begin(ssid, password);
+    Portal.begin();
 
     while (WiFi.status() != WL_CONNECTED) {
         Serial.print(".");
@@ -67,6 +73,7 @@ void connect_to_wifi() {
 }
 
 void loop() {
+    Portal.handleClient();
     int btn1 = digitalRead(pin_btn1);
     int btn2 = digitalRead(pin_btn2);
     int btn3 = digitalRead(pin_btn3);
@@ -126,4 +133,3 @@ void loop() {
         last_wifi_check = current_millis;
     }
 }
-

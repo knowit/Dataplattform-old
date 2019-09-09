@@ -34,6 +34,7 @@ stageName="dev-$lowerCaseInitials"
 
 
 #Install all required packages for the python scripts
+cd ..
 pip3 install -r requirements.txt
 
 

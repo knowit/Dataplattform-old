@@ -1,3 +1,4 @@
+import decimal
 import json
 import urllib.request
 import urllib.parse
@@ -9,6 +10,7 @@ sql_queries = {
     'MyTestType': 'SELECT * FROM MyTestType',
     'Testing':'SELECT COUNT(*) FROM MyTestType',
     'Testing2':'SELECT COUNT(*) FROM MyTestType WHERE testBool=true',
+    'SlackEmojiType': 'SELECT * FROM SlackEmojiType'
 }
 
 
@@ -41,7 +43,7 @@ def handler(event, context):
     return{
         'statusCode': 200,
         'headers': {'Content-Type': 'application/json'},
-        'body': json.dumps(data)
+        'body': json.dumps(data, default=decimal_default)
     }
 
 
@@ -61,3 +63,8 @@ def pull_data(sql_connection, sql_query):
 
     return success, data
 
+
+def decimal_default(obj):
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    raise TypeError

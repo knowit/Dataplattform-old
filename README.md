@@ -15,14 +15,11 @@
 [Eksempel av innsending](https://github.com/knowit/Dataplattform/wiki/Eksempel:-sende-inn-data-til-dataplattformen)
 
 ## Mappestruktur
+  * ```hardware-code/```
+      * Her er alle de forskjellige programmene skrevet for bruk til fysiske bokser.
   * ```services/```
       * Denne inneholder alle `serverless` services som deployes til AWS.
-  * ```event_knapp/```
-      * Kode for fysisk feedback-knapp med 3 alternativer
-  * ```rate_day/```
-      * Kode for fysisk feedback-knapp med 2 alternativer
-  * ```machine_learning```
-      * Jupyter notebook med demonstrasjon av maskin-læring på data fra plattformen
+
 
 ## Oppsett
 Se ```services/README.md``` for deploying til AWS og oppsett av QuickSight.

@@ -3,15 +3,12 @@
 Her ligger alle ```serverless framework```-services som deployeres til aws.
 De har hver sin ```serverless.yml``` som deployeres til et stage ved å kjøre
 ```serverless deploy --stage <stage>```.
-Vi anbefaler å installere `serverless` globalt:
-```bash
-npm install --global serverless
-```
 
 Vi bruker disse stagesene:
 * `prod`
 * `dev` (default)
 * `test` (for automatiske integrasjonstester m/ travis)
+* `dev-xxx` (personlig utviklings-stage)
 
 Deploy brukes også for å oppdatere stages som er live med ny kode, nye api-nøkler, roles, osv.
 Hvis du kun skal oppdatere koden til en lambda trenger du ikke å kjøre deploy,
@@ -47,6 +44,11 @@ oppsett. For å populere SSM med API keys for et stage kan du kjøre
 cd scripts/
 python3 generate_keys.py
 ```
+
+## Oppstart for ny bruker
+Hvis man er en helt ny bruker anbefaler vi at man heller bruker scripts som er i ```start_here/```.
+De vil gjøre mye av grovarbeidet for en ny bruker og gjøre det lettere å komme inn i prosjektet.
+Mer informasjon finnes i ```start_here/README.md```.
 
 
 ## QuickSight

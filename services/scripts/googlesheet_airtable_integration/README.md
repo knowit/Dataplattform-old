@@ -16,4 +16,9 @@ For google
 For cvpartner
 - Api key
 
-Nødvendige python biblioteker er oppført i requirements.txt
+Nødvendige python biblioteker:
+google-api-python-client==1.7.11
+google-auth==1.6.3
+google-auth-httplib2==0.0.3
+google-auth-oauthlib==0.4.0
+airtable-python-wrapper==0.12.0

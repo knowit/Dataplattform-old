@@ -12,6 +12,7 @@ jobs:
     - name: unittest
       run: |
         cd services && sudo -H sh install_reqs.sh
+        sudo pip install --upgrade setuptools
         set -e
         sudo -H python -m pytest --ignore=integration_tests
         

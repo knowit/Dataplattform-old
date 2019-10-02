@@ -1,0 +1,17 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: unittest
+      run: |
+        cd services && sudo sh install_reqs.sh
+        set -e
+        python -m pytest --ignore=integration_tests
+        

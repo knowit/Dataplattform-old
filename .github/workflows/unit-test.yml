@@ -29,4 +29,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest --ignore=integration_tests
+        pytest --ignore=services/integration_tests/

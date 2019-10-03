@@ -15,7 +15,7 @@ jobs:
     - name: Install dependencies
       run: |
         set -e
-        sudo npm install serverless
+        sudo npm install -g serverless
     - name: Configure aws
       run: |
         sudo aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}

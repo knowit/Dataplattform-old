@@ -7,7 +7,6 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from airtable import Airtable
 
-
 # Airtable API settings
 airtable_api_key = ""
 airtable_base_id = ""

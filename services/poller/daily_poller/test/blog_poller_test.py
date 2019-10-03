@@ -1,5 +1,9 @@
 import blog_poller
 import pickle
+import os
+
+myCmd = 'ls'
+os.system(myCmd)
 
 
 def read_html_from_pickle():

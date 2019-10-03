@@ -4,7 +4,7 @@ import os
 
 
 def read_html_from_pickle():
-    with open('/services/poller/daily_poller/test/website_data.pickle', 'rb') as handle:
+    with open('website_data.pickle', 'rb') as handle:
         return pickle.load(handle)
 
 

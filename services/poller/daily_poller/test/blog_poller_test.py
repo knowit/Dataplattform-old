@@ -5,7 +5,7 @@ import os
 
 def read_html_from_pickle():
     dirname = os.path.dirname
-    with open('poller/daily_poller/test/website_data.pickle', 'rb') as handle:
+    with open('website_data.pickle', 'rb') as handle:
         return pickle.load(handle)
 
 

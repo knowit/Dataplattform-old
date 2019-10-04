@@ -22,6 +22,10 @@ jobs:
         version: 12.x
     - name: Serverless deployment
       uses: serverless/github-action@v1.49.0
+    - name: Install dependencies
+      run: |
+        set -e
+        sudo npm install -g serverless
     - name: Configure aws
       run: |
         sudo aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}

@@ -28,6 +28,8 @@ jobs:
         sudo aws configure set aws_secret_access_key ${{ secrets.AWS_ACCESS_KEY }}
         sudo aws configure set default.region ${{ secrets.AWS_DEFAULT_REGION }}
         python3 --version
+        which python
+        which python3
     - name: Deploy every service
       run: |
         cd services

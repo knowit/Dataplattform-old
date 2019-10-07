@@ -29,8 +29,8 @@ DEFAULT_MAXTWEETS = 5000
 langid.set_languages(["no", "nn", "nb", "da", "se", "sv", "en"])
 
 #edit these
-ingest_url = "https://2q8h3bkh73.execute-api.eu-central-1.amazonaws.com/prod/dataplattform_ingest/"+TWITTER_SEARCH_TYPE
-ingest_api_key = "GK4obGHhUf9hWfXyGPds99BKQet3lWej2nqnz9Ux"
+ingest_url = ""+TWITTER_SEARCH_TYPE
+ingest_api_key = ""
 
 
 def post_to_ingest(data):
@@ -224,5 +224,5 @@ def create_data_point(item, language):
     return data_point
 
 
-setup(from_date="2019-01-08", to_date="2019-09-27", to_ingest=False)
+setup(from_date="2019-01-01", to_date="2019-09-27", to_ingest=False)
 

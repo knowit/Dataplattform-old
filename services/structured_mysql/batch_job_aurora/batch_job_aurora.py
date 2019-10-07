@@ -21,6 +21,8 @@ DEFAULT_TYPES = [
     "UBWType",
     "KnowitlabsType",
     "YrType",
+    "TwitterSearchType",
+    "TwitterAccountType"
 ]
 
 # Assume running hourly by default. Request the last 1h10m of data.

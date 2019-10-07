@@ -19,7 +19,7 @@ jobs:
     - name: Serverless install
       uses: serverless/github-action@v1.49.0
       with:
-        args: install
+        args: deploy
     - name: Configure aws
       run: |
         sudo aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}

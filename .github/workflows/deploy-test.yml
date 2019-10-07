@@ -12,10 +12,14 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: Set up Python 3.7
-      
-    - name: Serverless deployment
+    - name: npm install
+      uses: actions/npm@master
+      with:
+        args: install
+    - name: Serverless install
       uses: serverless/github-action@v1.49.0
+      with:
+        args: install
     - name: Configure aws
       run: |
         sudo aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}

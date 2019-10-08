@@ -29,11 +29,12 @@ jobs:
     - name: Serverless install
       run: |
         sudo npm install -g serverless
-        sudo apt install python3.7
+        sudo apt-get python3.7
         cd services
         sudo ./deploy_every_service.sh test
     - name: Integration tests
       run: |
+        sudo apt-get python
         cd services/integration_tests
         sudo ./install_integration_reqs.sh
         -python -m pytest

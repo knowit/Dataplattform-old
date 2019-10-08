@@ -40,6 +40,13 @@ USE_CVPARTNER_IMAGE = 14
 
 
 def main():
+    """
+    The main method. Initializes google sheet and airtable object
+    For each row in the google sheet object it calls the update_airtable
+    function
+
+    :return: None
+    """
     creds = None
 
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -80,8 +87,13 @@ def main():
 
 def update_airtable(airtable, row):
     """
-    Searches for a corresponding record in airtable based on email,
-    name and talk title from google sheet and updates the record
+    This method searches for a corresponding record in airtable
+    based on email, name and talk title from given row and updates the
+    airtable record
+
+    :param airtable: The airtable to update
+    :param row: The row containing the new data
+    :return:  None
     """
 
     sheet_data, use_cvpartner_image = parse_row(row)
@@ -115,8 +127,13 @@ def update_airtable(airtable, row):
 
 
 def parse_row(row):
-    """ Parses data from the google sheet
     """
+    This method parses a row from the google sheet
+
+    :param row: the google sheet row to be parsed
+    :return: the parsed data and use of cvparter image consent
+    """
+
     sheet_data = {}
     use_cvpartner_image = False
 
@@ -152,8 +169,12 @@ def parse_row(row):
 
 
 def get_cvpartner_image_url(email):
-    """ Fetches url for image on cvpartner
-        Returns None if not found
+    """
+    This method searches for a user on cvpartner based on an email
+    and fetches image url and description of the user
+
+    :param email: The email which are searched after
+    :return: description and image url if found. else None
     """
 
     url = f"https://knowit.cvpartner.com/api/v1/users/find?email={email}"
@@ -177,8 +198,12 @@ def get_cvpartner_image_url(email):
 
 def make_attachment_obj(image_url, filename):
     """
-    Creates an attachement object  for an
+    This method creates an attachement object for
     airtable attachment column type
+
+    :param image_url: link to picture
+    :param filename: what to call the picture
+    :return: the image object
     """
 
     image_object =\

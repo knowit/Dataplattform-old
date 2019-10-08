@@ -63,9 +63,11 @@ def get_cvpartner_data(email):
 
 def main():
     """
+    The main method. Initializes airtable object.
+    For each record in airtable it fetches corresponding cvpartner data and
+    updates the airtable record
 
-
-    :return:
+    :return: None
     """
     airtable = Airtable(airtable_base_id, airtable_table_name, api_key=airtable_api_key)
     records = airtable.get_all(fields=["email", bio_field_name, image_field_name])

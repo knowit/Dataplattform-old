@@ -34,8 +34,8 @@ jobs:
         sudo ./deploy_every_service.sh test
     - name: Integration tests
       run: |
-        apt update
-        apt install python
+        sudo apt update
+        sudo apt install python
         cd services/integration_tests
         sudo ./install_integration_reqs.sh
         -python -m pytest

@@ -36,4 +36,5 @@ jobs:
       run: |
         cd services/integration_tests
         sudo ./install_integration_reqs.sh
+        pip install pytest
         python3 -m pytest

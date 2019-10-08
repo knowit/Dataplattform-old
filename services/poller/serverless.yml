@@ -18,7 +18,7 @@ provider:
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
-  timeout: 30
+  timeout: 60
   stackTags:
     Project: ${self:custom.project}
   tags:
@@ -51,6 +51,10 @@ functions:
       UBW_URL: ${ssm:dataplattform_ubw_url}
       UBW_USERNAME: ${ssm:dataplattform_ubw_username}
       DATAPLATTFORM_YR_LOCATION: 'Norway/Oslo/Oslo/Lakkegata'
+      DATAPLATTFORM_TWITTER_CONSUMER_SECRET: ${ssm:dataplattform_twitter_consumer_secret}
+      DATAPLATTFORM_TWITTER_CONSUMER_KEY: ${ssm:dataplattform_twitter_consumer_key}
+      DATAPLATTFORM_TWITTER_ACCESS_SECRET: ${ssm:dataplattform_twitter_access_secret}
+      DATAPLATTFORM_TWITTER_ACCESS_TOKEN: ${ssm:dataplattform_twitter_access_token}
     events:
       - schedule: rate(1 day)
 

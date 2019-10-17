@@ -4,6 +4,7 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   daily_poller_lambda: ${self:custom.project}-daily_poller
+  hourly_poller_lambda: ${self:custom.project}-hourly_poller
   pollingStatusTable: ${self:custom.project}-polling_status
   ingest_apikey: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
   insert_apikey: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
@@ -15,7 +16,7 @@ custom:
 
 provider:
   name: aws
-  stage: dev
+  stage: test
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024

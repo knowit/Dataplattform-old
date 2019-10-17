@@ -3,6 +3,8 @@ service: dataplattform-structured-mysql
 custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
+  apikeys:
+    insert_event: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
   batch_job_lambda: ${self:custom.project}-batch_job_mysql
   database_name: Dataplattform
   database_port: 3306
@@ -25,11 +27,14 @@ custom:
 
 provider:
   name: aws
-  stage: dev
+  stage: test
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
   timeout: 60
+  apiKeys: # IMPORTANT: Due to a quirk with how serverless generates CloudFormation, please add new keys at the bottom
+    - name: ${self:custom.project}-insert_event-apikey
+      value: ${self:custom.apikeys.insert_event}
   stackTags:
     Project: ${self:custom.project}
   tags:
@@ -76,6 +81,27 @@ functions:
       subnetIds:
         - subnet-bd8400d5 # ON-LAN1
         - subnet-9a4981e0 # ON-LAN2
+
+  insert_event:
+    handler: insert_event.handler
+    name: ${self:custom.project}-insert-event
+    package:
+      include:
+        - 'update/*.py'
+    environment:
+      DATAPLATTFORM_AURORA_HOST:
+        Fn::GetAtt:
+          - auroraCluster
+          - Endpoint.Address
+      DATAPLATTFORM_AURORA_PORT: ${self:custom.database_port}
+      DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
+      DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
+      DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
+    events:
+      - http:
+          path: insert_event/
+          method: post
+          private: true
 
 resources:
   Resources:
@@ -145,6 +171,16 @@ resources:
           - Key: Project
             Value: ${self:custom.project}
   Outputs:
+    InserEventUrl:
+      Description: "insert_event URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/insert_event/"
+      Export:
+        Name: ${self:custom.project}-insert-event-url
     auroraClusterRWEndpoint:
       Description: "Read/write endpoint for aurora cluster"
       Value:

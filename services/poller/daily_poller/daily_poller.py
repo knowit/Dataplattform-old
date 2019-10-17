@@ -2,6 +2,8 @@ import blog_poller
 import ubw_poller
 import traceback
 import yr_poller
+import twitter_search_poller
+import twitter_account_poller
 
 
 def lambda_handler(event, context):
@@ -10,6 +12,8 @@ def lambda_handler(event, context):
         ubw_poller.poll,
         blog_poller.poll,
         yr_poller.poll,
+        twitter_search_poller.poll,
+        twitter_account_poller.poll
     ]
     errors = 0
     for poll in pollings:
@@ -31,3 +35,4 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': ''
         }
+

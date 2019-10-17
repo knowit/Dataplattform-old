@@ -4,7 +4,6 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   daily_poller_lambda: ${self:custom.project}-daily_poller
-  hourly_poller_lambda: ${self:custom.project}-hourly_poller
   pollingStatusTable: ${self:custom.project}-polling_status
   ingest_apikey: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
   insert_apikey: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
@@ -16,11 +15,11 @@ custom:
 
 provider:
   name: aws
-  stage: test
+  stage: dev
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
-  timeout: 30
+  timeout: 60
   stackTags:
     Project: ${self:custom.project}
   tags:
@@ -53,8 +52,13 @@ functions:
       UBW_URL: ${ssm:dataplattform_ubw_url}
       UBW_USERNAME: ${ssm:dataplattform_ubw_username}
       DATAPLATTFORM_YR_LOCATION: 'Norway/Oslo/Oslo/Lakkegata'
+      DATAPLATTFORM_TWITTER_CONSUMER_SECRET: ${ssm:dataplattform_twitter_consumer_secret}
+      DATAPLATTFORM_TWITTER_CONSUMER_KEY: ${ssm:dataplattform_twitter_consumer_key}
+      DATAPLATTFORM_TWITTER_ACCESS_SECRET: ${ssm:dataplattform_twitter_access_secret}
+      DATAPLATTFORM_TWITTER_ACCESS_TOKEN: ${ssm:dataplattform_twitter_access_token}
     events:
       - schedule: rate(1 day)
+
   hourly_poller:
     handler: hourly_poller.handler
     module: hourly_poller
@@ -104,19 +108,6 @@ resources:
                     - Fn::GetAtt:
                       - PollingStatusTable
                       - Arn
-    PollingStatusTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:custom.pollingStatusTable}
-        AttributeDefinitions:
-          - AttributeName: type
-            AttributeType: S
-        KeySchema:
-          - AttributeName: type
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 1
 
     hourlyPollerRole:
       Type: AWS::IAM::Role
@@ -133,6 +124,19 @@ resources:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
 
+    PollingStatusTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.pollingStatusTable}
+        AttributeDefinitions:
+          - AttributeName: type
+            AttributeType: S
+        KeySchema:
+          - AttributeName: type
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 1
   Outputs:
     PollingStatusTableName:
       Description: "The table name for the polling status table."

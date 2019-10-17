@@ -4,6 +4,7 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   apikeys:
+    update_event: ${ssm:dataplattform_${self:custom.stage}_update_event_apikey}
     insert_event: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
   batch_job_lambda: ${self:custom.project}-batch_job_mysql
   database_name: Dataplattform
@@ -33,6 +34,8 @@ provider:
   memorySize: 1024
   timeout: 60
   apiKeys: # IMPORTANT: Due to a quirk with how serverless generates CloudFormation, please add new keys at the bottom
+    - name: ${self:custom.project}-update_event-apikey
+      value: ${self:custom.apikeys.update_event}
     - name: ${self:custom.project}-insert_event-apikey
       value: ${self:custom.apikeys.insert_event}
   stackTags:
@@ -84,6 +87,7 @@ functions:
 
   insert_event:
     handler: insert_event.handler
+    module: update
     name: ${self:custom.project}-insert-event
     package:
       include:
@@ -102,6 +106,12 @@ functions:
           path: insert_event/
           method: post
           private: true
+    vpc:
+      securityGroupIds:
+        - sg-2ca58644 # ON-LAN
+      subnetIds:
+        - subnet-bd8400d5 # ON-LAN1
+        - subnet-9a4981e0 # ON-LAN2
 
 resources:
   Resources:
@@ -171,6 +181,16 @@ resources:
           - Key: Project
             Value: ${self:custom.project}
   Outputs:
+    UpdateEventUrl:
+      Description: "update_event URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/update_event/"
+      Export:
+        Name: ${self:custom.project}-update-event-url
     InserEventUrl:
       Description: "insert_event URL"
       Value:

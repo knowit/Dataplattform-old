@@ -1,5 +1,6 @@
 import os
 import pymysql
+import json
 
 
 def handler(event, context):
@@ -12,9 +13,11 @@ def handler(event, context):
         db=os.getenv("DATAPLATTFORM_AURORA_DB_NAME"),
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)
-
-    ids = insert_events(connection, event['data'], get_saved_events(connection))
-
+    saved_events = get_saved_events(connection)
+    data = json.loads(event['body'])['data']
+    ids = saved_events
+    if len(data) > 0:
+        ids = insert_events(connection, data, saved_events)
     for id in ids:
         sql = 'DELETE FROM EventRatingType2 WHERE id = "' + id['id'] + '";'
         cur = connection.cursor()
@@ -22,13 +25,12 @@ def handler(event, context):
             cur.execute(sql)
         except pymysql.err.IntegrityError:
             print("Failed")
-
     connection.commit()
     connection.close()
 
     return {
         'statusCode': 200,
-        'body': ''
+        'body': 'Done'
         }
 
 
@@ -59,11 +61,9 @@ def get_saved_events(db_connection):
     return ids
 
 
-def insert_events(db_connection, calendar, ids):
-
-    for event in calendar:
-
-        for rating_box in calendar[event]['event_button_name']:
+def insert_events(db_connection, events, ids):
+    for event in events:
+        for rating_box in events[event]['event_button_name']:
             box_id = get_box_id(rating_box, db_connection)
             if len(box_id) == 0:
                 break
@@ -75,15 +75,15 @@ def insert_events(db_connection, calendar, ids):
             if box_id[0]["event_button_name"] == rating_box:
                 parameters = "id, event_id"
                 values = '"' + event + str(box_id[0]["event_button_id"]) + '", "' + event + '"'
-                for parameter in calendar[event]:
+                for parameter in events[event]:
                     parameters += ", " + parameter
                     if parameter == "event_button_name":
                         values += ", \"" + rating_box + "\""
                     else:
-                        if type(calendar[event][parameter]) is str:
-                            values += ', "' + str(calendar[event][parameter]) + '"'
+                        if type(events[event][parameter]) is str:
+                            values += ', "' + str(events[event][parameter]) + '"'
                         else:
-                            values += ", " + str(calendar[event][parameter])
+                            values += ", " + str(events[event][parameter])
                 sql = "INSERT IGNORE INTO EventRatingType2 (" \
                       + parameters \
                       + ", " + "event_button_id" + ") VALUES (" \

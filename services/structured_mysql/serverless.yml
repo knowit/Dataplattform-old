@@ -4,6 +4,11 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   batch_job_lambda: ${self:custom.project}-batch_job_mysql
+  update_event_lambda: ${self:custom.project}-update_event
+  apikeys:
+    update_event: ${ssm:dataplattform_${self:custom.stage}_update_event_apikey}
+    insert_event: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
+
   database_name: Dataplattform
   database_port: 3306
   db:
@@ -20,16 +25,23 @@ custom:
   pythonRequirements:
     useDownloadCache: true
     useStaticCache: true
+
   output:
     file: ../integration_tests/structured_mysql.serverless_outputs_${self:custom.stage}.json
 
 provider:
   name: aws
-  stage: dev
+  stage: test
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
   timeout: 60
+  apiKeys:
+    - name: ${self:custom.project}-update_event-apikey
+      value: ${self:custom.apikeys.update_event}
+    - name: ${self:custom.project}-insert_event-apikey
+      value: ${self:custom.apikeys.insert_event}
+
   stackTags:
     Project: ${self:custom.project}
   tags:
@@ -77,6 +89,62 @@ functions:
         - subnet-bd8400d5 # ON-LAN1
         - subnet-9a4981e0 # ON-LAN2
 
+  update_event:
+    handler: update_event.handler
+    module: update
+    name: ${self:custom.update_event_lambda}
+    description: Updates vote count in Aurora DB
+    package:
+      include:
+        - 'update/*.py'
+    environment:
+      DATAPLATTFORM_AURORA_HOST:
+        Fn::GetAtt:
+          - auroraCluster
+          - Endpoint.Address
+      DATAPLATTFORM_AURORA_PORT: ${self:custom.database_port}
+      DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
+      DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
+      DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
+    events:
+      - http:
+          path: update_event/{type}
+          method: POST
+          private: true
+    vpc:
+      securityGroupIds:
+        - sg-2ca58644 # ON-LAN
+      subnetIds:
+        - subnet-bd8400d5 # ON-LAN1
+        - subnet-9a4981e0 # ON-LAN2
+
+  insert_event:
+    handler: insert_event.handler
+    name: ${self:custom.project}-insert-event
+    package:
+      include:
+        - 'update/*.py'
+    environment:
+      DATAPLATTFORM_AURORA_HOST:
+        Fn::GetAtt:
+          - auroraCluster
+          - Endpoint.Address
+      DATAPLATTFORM_AURORA_PORT: ${self:custom.database_port}
+      DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
+      DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
+      DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
+    events:
+      - http:
+          path: insert_event/
+          method: post
+          private: true
+    vpc:
+      securityGroupIds:
+        - sg-2ca58644 # ON-LAN
+      subnetIds:
+        - subnet-bd8400d5 # ON-LAN1
+        - subnet-9a4981e0 # ON-LAN2
+
 resources:
   Resources:
     batchJobRole:
@@ -105,6 +173,7 @@ resources:
                     - dynamodb:Query
                   Resource:
                     - 'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-arn
+
     auroraCluster:
       # TODO export cloudwatch logs?
       Type: AWS::RDS::DBCluster
@@ -145,6 +214,28 @@ resources:
           - Key: Project
             Value: ${self:custom.project}
   Outputs:
+    UpdateEventUrl:
+      Description: "update_event URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/update_event/"
+      Export:
+        Name: ${self:custom.project}-update-event-url
+
+    InserEventUrl:
+      Description: "insert_event URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/insert_event/"
+      Export:
+        Name: ${self:custom.project}-insert-event-url
+
     auroraClusterRWEndpoint:
       Description: "Read/write endpoint for aurora cluster"
       Value:

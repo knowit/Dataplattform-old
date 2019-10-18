@@ -1,3 +1,3 @@
 from setuptools import setup
 
-setup(name='update', version='1.0.0', packages=['.'])
+setup(name='update_event', version='1.0.0', packages=['.'])

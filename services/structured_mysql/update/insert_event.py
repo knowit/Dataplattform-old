@@ -19,7 +19,7 @@ def handler(event, context):
     if len(data) > 0:
         ids = insert_events(connection, data, saved_events)
     for id in ids:
-        sql = 'DELETE FROM EventRatingType2 WHERE id = "' + id['id'] + '";'
+        sql = 'DELETE FROM EventRatingType WHERE id = "' + id['id'] + '";'
         cur = connection.cursor()
         try:
             cur.execute(sql)
@@ -46,7 +46,7 @@ def get_box_id(box_name, db_connection):
 
 def get_saved_events(db_connection):
     getSavedEventsSql = "SELECT id, event_id, event_button_id " \
-                        "FROM EventRatingType2 " \
+                        "FROM EventRatingType " \
                         "WHERE ( timestamp_from < unix_timestamp() + 60*60*24 " \
                         "OR timestamp_to < unix_timestamp() + 60*60*24) " \
                         "AND (timestamp_from > unix_timestamp() " \
@@ -84,7 +84,7 @@ def insert_events(db_connection, events, ids):
                             values += ', "' + str(events[event][parameter]) + '"'
                         else:
                             values += ", " + str(events[event][parameter])
-                sql = "INSERT IGNORE INTO EventRatingType2 (" \
+                sql = "INSERT IGNORE INTO EventRatingType (" \
                       + parameters \
                       + ", " + "event_button_id" + ") VALUES (" \
                       + values + ", " \

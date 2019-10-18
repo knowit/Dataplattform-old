@@ -64,7 +64,7 @@ def update_event(data, timestamp_now):
 
 def get_record(connection, button_id, timestamp_now):
     cur = connection.cursor()
-    sql_query = "SELECT * FROM Dataplattform.EventRatingType2 WHERE event_button_id = "+str(button_id)+\
+    sql_query = "SELECT * FROM Dataplattform.EventRatingType WHERE event_button_id = "+str(button_id)+\
                 " AND (timestamp_from + 60 * 15 < "+timestamp_now+" AND timestamp_to + 60 * 15 > "+\
                 timestamp_now+");"
 
@@ -84,7 +84,7 @@ def get_record(connection, button_id, timestamp_now):
 
 def update_record(connection, record_id, updated_pos_count, updated_neu_count, updated_neg_count):
     cur = connection.cursor()
-    sql_query = "UPDATE Dataplattform.EventRatingType2 SET positive_count = "+str(updated_pos_count)+\
+    sql_query = "UPDATE Dataplattform.EventRatingType SET positive_count = "+str(updated_pos_count)+\
                 ", neutral_count = "+str(updated_neu_count)+", negative_count = "+str(updated_neg_count)+\
                 " WHERE id = \""+record_id+"\";"
 

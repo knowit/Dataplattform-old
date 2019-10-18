@@ -7,7 +7,8 @@ import urllib.request
 import urllib.parse
 
 
-update_types = {'EventRatingType',}
+update_types = {'EventRatingType', }
+
 
 def handler(event, context):
     data_type = event["pathParameters"]["type"]
@@ -16,7 +17,8 @@ def handler(event, context):
         data = filters.filter[data_type](data)
     timestamp, timestamp_random = IngestUtil.insert_doc(data_type, data=data)
 
-    post_to_update(data_type, data)
+    if data_type in update_types:
+        post_to_update(data_type, data)
 
     return {
         'statusCode': 200,
@@ -26,17 +28,17 @@ def handler(event, context):
         })
     }
 
+
 def post_to_update(data_type, body):
     url = os.getenv("DATAPLATTFORM_UPDATE_URL")
     apikey = os.getenv("DATAPLATTFORM_UPDATE_APIKEY")
 
     data = body.encode("ascii")
 
-    if data_type in update_types:
-        url += data_type
-        try:
-            request = urllib.request.Request(url, data=data, headers={"x-api-key": apikey})
-            response = urllib.request.urlopen(request)
-            return response.getcode()
-        except urllib.request.HTTPError:
-            return 500
+    url += data_type
+    try:
+        request = urllib.request.Request(url, data=data, headers={"x-api-key": apikey})
+        response = urllib.request.urlopen(request)
+        return response.getcode()
+    except urllib.request.HTTPError:
+        return 500

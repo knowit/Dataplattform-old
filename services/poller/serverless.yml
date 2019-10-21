@@ -4,8 +4,10 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   daily_poller_lambda: ${self:custom.project}-daily_poller
+  hourly_poller_lambda: ${self:custom.project}-hourly_poller
   pollingStatusTable: ${self:custom.project}-polling_status
   ingest_apikey: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
+  insert_apikey: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
   pythonRequirements:
     useDownloadCache: true
     useStaticCache: true
@@ -14,7 +16,7 @@ custom:
 
 provider:
   name: aws
-  stage: dev
+  stage: prod
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
@@ -58,6 +60,24 @@ functions:
     events:
       - schedule: rate(1 day)
 
+  hourly_poller:
+    handler: hourly_poller.handler
+    module: hourly_poller
+    name: ${self:custom.hourly_poller_lambda}
+    description: hourly_poller Lambda
+    role: hourlyPollerRole
+    package:
+      include:
+        - 'hourly_poller/*.py'
+        - 'hourly_poller/creds.json'
+    environment:
+      DATAPLATTFORM_INSERT_APIKEY: ${self:custom.insert_apikey}
+      DATAPLATTFORM_INSERT_URL:
+        'Fn::ImportValue': ${self:custom.project}-insert-event-url
+      DATAPLATTFORM_GOOGLE_CALENDAR_IDS: ${ssm:dataplattform_google_calendar_ids}
+    events:
+      - schedule: rate(1 hour)
+
 resources:
   Resources:
     dailyPollerRole:
@@ -89,6 +109,22 @@ resources:
                     - Fn::GetAtt:
                       - PollingStatusTable
                       - Arn
+
+    hourlyPollerRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-HourlyPollerRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+
     PollingStatusTable:
       Type: AWS::DynamoDB::Table
       Properties:

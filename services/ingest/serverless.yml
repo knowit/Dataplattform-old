@@ -12,12 +12,13 @@ custom:
     slack_app_ingest: ${ssm:dataplattform_${self:custom.stage}_slack_event_app_ingest_apikey}
     polling_ingest: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
     travis_ingest: ${ssm:dataplattform_${self:custom.stage}_travis_ingest_apikey}
+    update_event: ${ssm:dataplattform_${self:custom.stage}_update_event_apikey}
   output:
     file: ../integration_tests/ingest.serverless_outputs_${self:custom.stage}.json
 
 provider:
   name: aws
-  stage: dev
+  stage: prod
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
@@ -34,6 +35,7 @@ provider:
       value: ${self:custom.apikeys.polling_ingest}
     - name: ${self:custom.project}-travis_ingest_apikey
       value: ${self:custom.apikeys.travis_ingest}
+
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
@@ -62,6 +64,10 @@ functions:
         - 'ingest/*.py'
     environment:
       DATAPLATTFORM_RAW_TABLENAME: ${self:custom.project}
+      DATAPLATTFORM_UPDATE_APIKEY: ${self:custom.apikeys.update_event}
+      DATAPLATTFORM_UPDATE_URL:
+        'Fn::ImportValue': ${self:custom.project}-update-event-url
+
     events:
       - http:
           path: dataplattform_ingest/{type}

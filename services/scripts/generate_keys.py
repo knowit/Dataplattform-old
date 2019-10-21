@@ -12,6 +12,8 @@ keys = [
 
     "dataplattform_STAGE_fetch_apikey",
     "dataplattform_STAGE_batch_job_apikey",
+    "dataplattform_STAGE_insert_event_apikey",
+    "dataplattform_STAGE_update_event_apikey"
 ]
 
 default_stages = ["prod", "test", "dev"]

@@ -67,20 +67,19 @@ def get_events(credsfile, calendar_id):
     events = events_result.get('items', [])
     info = {}
     for event in events:
+        boxes = []
         if 'location' in event:
-            boxes = []
             temp = event['location'].split(',')
             for box in temp:
                 if "Enheter" in box:
                     boxes.append(box.split('-')[-1])
-            if len(boxes) > 0:
-                info[event['id']] = {
-                    'timestamp_from': get_timestamp(event['start']['dateTime']),
-                    'timestamp_to': get_timestamp(event['end']['dateTime']),
-                    'event_summary': event['summary'],
-                    'event_button_name': boxes,
-                    'creator': event['creator']['email'],
-                }
+        info[event['id']] = {
+            'timestamp_from': get_timestamp(event['start']['dateTime']),
+            'timestamp_to': get_timestamp(event['end']['dateTime']),
+            'event_summary': event['summary'],
+            'event_button_name': boxes,
+            'creator': event['creator']['email'],
+        }
     return info
 
 

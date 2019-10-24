@@ -11,7 +11,12 @@ def handler(event, context):
 
     for poll in pollings:
         print("//////////////////POLLING//////////////////////////")
-        poll()
+        try:
+            poll()
+        except:
+            errors += 1
+            print("//////////////////////////////////ERROR////////////////////////////////")
+            print("Poll failed")
 
     if errors == 0:
         return {

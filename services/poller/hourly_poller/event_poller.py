@@ -96,6 +96,7 @@ def get_events(credsfile, calendar_id):
             creator = event['creator']['email']
 
         info[event['id']] = {
+            'calendar_id': calendar_id,
             'timestamp_from': startTime,
             'timestamp_to': endTime,
             'event_summary': summary,

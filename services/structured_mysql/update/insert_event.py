@@ -93,10 +93,7 @@ def insert_events(db_connection, events, ids):
                     if entry < len(events[event]['event_button_name']):
                         values += ", \"" + events[event]['event_button_name'][entry] + "\""
                 else:
-                    if type(events[event][parameter]) is str:
-                        values += ', ' + json.dumps(events[event][parameter])
-                    else:
-                        values += ", " + json.dumps(events[event][parameter])
+                    values += ", " + json.dumps(events[event][parameter], ensure_ascii=False)
 
             sql = "INSERT IGNORE INTO EventRatingType (" + parameters
             if entry < len(events[event]['event_button_name']):
@@ -107,6 +104,8 @@ def insert_events(db_connection, events, ids):
                 sql += ", " + str(box_id[0]["event_button_id"])
             sql += ");"
             cursor = db_connection.cursor()
+            print("///////////////////////////////////SQL/////////////////////////////")
+            print(sql)
             try:
                 cursor.execute(sql)
             except pymysql.err.IntegrityError:

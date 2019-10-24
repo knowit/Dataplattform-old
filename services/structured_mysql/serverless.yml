@@ -108,8 +108,8 @@ functions:
       DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
     events:
       - sns:
-          topicName: ${self:custom.project}-${self:custom.stage}-events
-          displayName: ${self:custom.project}-${self:custom.stage}--events
+          topicName: ${self:custom.project}-events
+          displayName: ${self:custom.project}-events
     vpc:
       securityGroupIds:
         - sg-2ca58644 # ON-LAN

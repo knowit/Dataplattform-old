@@ -4,7 +4,7 @@ import json
 
 
 def handler(event, context):
-
+    print("//////////////////////////////////////RUNNING///////////////////////////////")
     connection = pymysql.connect(
         host=os.getenv("DATAPLATTFORM_AURORA_HOST"),
         port=int(os.getenv("DATAPLATTFORM_AURORA_PORT")),
@@ -14,7 +14,9 @@ def handler(event, context):
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)
     saved_events = get_saved_events(connection)
-    data = json.loads(event['body'])['data']
+    data = {}
+    for records in event['Records']:
+        data.update(json.loads(records['Sns']['Message'])['data'])
     ids = saved_events
     if len(data) > 0:
         ids = insert_events(connection, data, saved_events)
@@ -74,16 +76,16 @@ def insert_events(db_connection, events, ids):
 
             if box_id[0]["event_button_name"] == rating_box:
                 parameters = "id, event_id"
-                values = '"' + event + str(box_id[0]["event_button_id"]) + '", "' + event + '"'
+                values = '"' + event + json.dumps(box_id[0]["event_button_id"]) + '", "' + event + '"'
                 for parameter in events[event]:
                     parameters += ", " + parameter
                     if parameter == "event_button_name":
                         values += ", \"" + rating_box + "\""
                     else:
                         if type(events[event][parameter]) is str:
-                            values += ', "' + str(events[event][parameter]) + '"'
+                            values += ', ' + json.dumps(events[event][parameter])
                         else:
-                            values += ", " + str(events[event][parameter])
+                            values += ", " + json.dumps(events[event][parameter])
                 sql = "INSERT IGNORE INTO EventRatingType (" \
                       + parameters \
                       + ", " + "event_button_id" + ") VALUES (" \
@@ -91,6 +93,7 @@ def insert_events(db_connection, events, ids):
                       + str(box_id[0]["event_button_id"]) \
                       + ");"
                 cursor = db_connection.cursor()
+                print(sql)
                 try:
                     cursor.execute(sql)
                 except pymysql.err.IntegrityError:

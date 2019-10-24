@@ -10,12 +10,13 @@ def handler(event, context):
     errors = 0
 
     for poll in pollings:
+        print("//////////////////POLLING//////////////////////////")
         try:
             poll()
         except:
-            # If one of the polling methods fails it should not stop the others from running.
-            traceback.print_exc()
             errors += 1
+            print("//////////////////////////////////ERROR////////////////////////////////")
+            print("Poll failed")
 
     if errors == 0:
         return {

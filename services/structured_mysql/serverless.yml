@@ -31,7 +31,7 @@ custom:
 
 provider:
   name: aws
-  stage: prod
+  stage: test
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
@@ -91,6 +91,7 @@ functions:
 
   insert_event:
     handler: insert_event.handler
+    description: Receives SNS events and inserts events in Aurora
     module: update
     name: ${self:custom.project}-insert-event
     package:
@@ -106,10 +107,9 @@ functions:
       DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
       DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
     events:
-      - http:
-          path: insert_event/
-          method: post
-          private: true
+      - sns:
+          topicName: ${self:custom.project}-events
+          displayName: ${self:custom.project}-events
     vpc:
       securityGroupIds:
         - sg-2ca58644 # ON-LAN

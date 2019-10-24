@@ -6,6 +6,7 @@ import urllib.request
 import urllib.parse
 import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
+import boto3
 
 
 def poll():
@@ -24,13 +25,17 @@ def poll():
 
     url = os.getenv("DATAPLATTFORM_INSERT_URL")
     insert_key = os.getenv("DATAPLATTFORM_INSERT_APIKEY")
-    data = json.dumps(events).encode("ascii")
-    try:
-        req = urllib.request.Request(url, headers={"x-api-key": insert_key}, data=data)
-        response = urllib.request.urlopen(req)
-    except:
-        print("Error")
-        return False
+    data = json.dumps(events)
+
+    sns = boto3.client('sns')
+
+    response = sns.publish(
+        TopicArn=os.getenv("DATAPLATTFORM_PUBLISH_EVENT"),
+        Message=data
+    )
+
+    print("////////////////////////////////RESPONSE//////////////////////////////")
+    print(response)
 
     return True
 

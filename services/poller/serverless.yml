@@ -16,11 +16,11 @@ custom:
 
 provider:
   name: aws
-  stage: prod
+  stage: test
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
-  timeout: 60
+  timeout: 30
   stackTags:
     Project: ${self:custom.project}
   tags:
@@ -75,6 +75,7 @@ functions:
       DATAPLATTFORM_INSERT_URL:
         'Fn::ImportValue': ${self:custom.project}-insert-event-url
       DATAPLATTFORM_GOOGLE_CALENDAR_IDS: ${ssm:dataplattform_google_calendar_ids}
+      DATAPLATTFORM_PUBLISH_EVENT: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.project}-events
     events:
       - schedule: rate(1 hour)
 
@@ -124,6 +125,17 @@ resources:
               Action: sts:AssumeRole
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        Policies:
+          - PolicyName: ${self:custom.project}-snsPublishEventPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "sns:Publish"
+                    - "sns:ListTopics"
+                  Resource: "*"
+
 
     PollingStatusTable:
       Type: AWS::DynamoDB::Table
@@ -146,3 +158,4 @@ resources:
 plugins:
   - serverless-python-requirements
   - serverless-stack-output
+  - serverless-pseudo-parameters

@@ -104,8 +104,6 @@ def insert_events(db_connection, events, ids):
                 sql += ", " + str(box_id[0]["event_button_id"])
             sql += ");"
             cursor = db_connection.cursor()
-            print("///////////////////////////////////SQL/////////////////////////////")
-            print(sql)
             try:
                 cursor.execute(sql)
             except pymysql.err.IntegrityError:

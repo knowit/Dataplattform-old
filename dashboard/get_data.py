@@ -42,7 +42,7 @@ def get_data(type):
     connection = connect_to_aurora_local()
     cur = connection.cursor()
 
-    sql_query = "SELECT * FROM Dataplattform.EventRatingType WHERE event_button_name IS NOT NULL"
+    sql_query = ""
 
     try:
        response = cur.execute(sql_query)
@@ -71,7 +71,7 @@ def get_all_events():
     connection = connect_to_aurora_local()
     cur = connection.cursor()
 
-    sql_query = "SELECT * FROM Dataplattform.EventRatingType"
+    sql_query = ""
 
     try:
         response = cur.execute(sql_query)

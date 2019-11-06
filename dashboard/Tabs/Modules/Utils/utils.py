@@ -8,18 +8,28 @@ def load_graph(data_dict, path):
 	del graph['layout']['template']['themeRef']
 
 	for jsonData in graph['data']:
-		for column in jsonData['meta']['columnNames']:
-			if jsonData['name'] not in data_dict:
+		update_graph(jsonData, data_dict)
+
+
+	return graph
+
+
+def update_graph(jsonData, data_dict):
+	if jsonData['name'] not in data_dict:
 				raise ValueError(
 					"{:d} does not exist in input dictionary".format(
 						jsonData['name']
 					)
 				)
-			if column in data_dict[jsonData['name']]:
-				jsonData[column] = data_dict[jsonData['name']][column]
-
-
-	return graph
+	for column in jsonData['meta']['columnNames']:
+		if isinstance(jsonData['meta']['columnNames'][column], str):
+			if jsonData['meta']['columnNames'][column] in data_dict[jsonData['name']]:
+				jsonData[column] = data_dict[jsonData['name']][jsonData['meta']['columnNames'][column]]
+		elif isinstance(jsonData['meta']['columnNames'][column], dict):
+			for subColumn in jsonData['meta']['columnNames'][column]:
+				if jsonData['meta']['columnNames'][column][subColumn] in data_dict[jsonData['name']][column]:
+					jsonData[column][subColumn] = data_dict[jsonData['name']][column][jsonData['meta']['columnNames'][column][subColumn]]
+			del  jsonData[column]['meta']
 
 
 def get_data(sql):

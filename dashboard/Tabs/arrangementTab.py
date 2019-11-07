@@ -10,7 +10,7 @@ class ArrangementTab(abstractTab):
         self.grid = Grid(grid_id="arrangement", num_rows=12, num_cols=12)
         self.grid.add_element(ArrangementTimeSeriesModule(app).get_module(), 0, 0, 6, 6)
         self.grid.add_element(ArrangementResponseBarModule(app).get_module(), 0, 6, 6, 6)
-        self.grid.add_element(ArrangementResponsePieModule(app).get_module(), 6, 0, 6, 12)
+        self.grid.add_element(ArrangementResponsePieModule(app).get_module(), 6, 0, 3, 6)
 
 
 

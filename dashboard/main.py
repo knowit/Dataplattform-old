@@ -19,12 +19,5 @@ app.config['suppress_callback_exceptions'] = True
 app.layout = get_layout(app)
 register_callbacks(app)
 
-# slackTab = SlackTab()
-# twitterTab = TwitterTab()
-#
-#
-# app.layout = html.Div(children=twitterTab.get_tab(), style=app_style)
-
-
 if __name__ == '__main__':
 	app.run_server(debug=True)

@@ -1,11 +1,14 @@
 import dash_html_components as html
 #import dash_bootstrap_components as dbc
 import dash_core_components as dcc
-from dash.dependencies import Output, Input
+from dash.dependencies import Output, Input, State
 
 from Tabs.slackTab import SlackTab
 from Tabs.twitterTab import TwitterTab
 from Tabs.arrangementTab import ArrangementTab
+from Tabs.fagtimerTab import FagtimerTab
+from Tabs.Modules.Utils.utils import load_graph, get_data
+
 
 #slackTab = SlackTab()
 #twitterTab = TwitterTab()
@@ -101,7 +104,7 @@ def register_callbacks(app):
                   [Input('tabs', 'value')])
     def render_content(tab):
         if tab == "fag_value":
-            return "HEI"
+            return FagtimerTab(app).get_tab()
         elif tab == "slack_value":
             return SlackTab(app).get_tab()
         elif tab == "arr_value":
@@ -110,5 +113,23 @@ def register_callbacks(app):
             return TwitterTab(app).get_tab()
 
     # traverse all components and register callbacks
-    #event_response_pie.register_callbacks(app)
+    @app.callback(Output('event_pie', 'figure'),
+                  [Input('event_dropdown', 'value')],
+                  [State('event_pie', 'figure')])
 
+    def chosen_event(value, fig):
+        sql_query_pie = "SELECT positive_count, neutral_count, negative_count " \
+                                "FROM Dataplattform.EventRatingType " \
+                                "WHERE event_id = %s"
+
+        df_pie = ((get_data(sql_query_pie, params=(value, ))).dropna()).sum()
+        fig['data'] = [
+            {
+                'labels': ['Positive', 'Neutral', 'Negative'],
+                'values': [df_pie['positive_count'], df_pie['neutral_count'], df_pie['negative_count']],
+                'type': 'pie',
+                'marker': {'colors': ['#55A868', '#ECEE70', '#BE4B27']
+                }
+            }]
+
+        return fig

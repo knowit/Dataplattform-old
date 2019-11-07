@@ -86,7 +86,7 @@ class Trace():
 class Bar():
 
 	def __init__(self, data, data_layout=[], trace_type="bar",
-				 colors=["#0c956e", "blue", "read"], title="",
+				 colors=["#0c956e", "blue", "red"], title="",
 				 names=[], axis_text=["X-axis", "Y-axis"],
 				 axis_type=["linear", "linear"], plot_bgcolor="#ffffff",
 				 grid_color="rgba(0, 0, 0, 0.1)", paper_bgcolor="#fffaf3",
@@ -108,6 +108,8 @@ class Bar():
 				"orientation": orientation,
 				"x": data[data_layout[i][0]],
 				"y": data[data_layout[i][1]],
+				"marker": {"color": colors[i]}
+
 			}
 
 			self.traces.append(trace)
@@ -142,11 +144,37 @@ class Bar():
 				yaxis_title=axis_text[1] if 1 < len(axis_text) else "Y-axis",
 			)
 
-		#self.fig = go.Figure(data=self.traces)
-
 	def get_trace(self):
 		return self.fig
 
 
 class Pie():
-	print("hi")
+
+	def __init__(self, values, labels,
+				 colors=["#0c956e", "blue", "red"],
+				 title="", plot_bgcolor="#ffffff",
+				 grid_color="rgba(0, 0, 0, 0.1)", paper_bgcolor="#fffaf3"):
+
+		fig_data = [
+			{
+				'labels': labels,
+				'values': values,
+				'type': 'pie',
+				'marker': {'colors': colors}
+			}
+		]
+
+		layout = {
+			"title": {
+				"text": title,
+
+			},
+			"plot_bgcolor": plot_bgcolor,
+			"paper_bgcolor": paper_bgcolor,
+		}
+
+		self.fig = go.Figure(data=fig_data, layout=layout)
+
+
+	def get_trace(self):
+		return self.fig

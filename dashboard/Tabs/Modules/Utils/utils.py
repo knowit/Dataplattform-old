@@ -32,9 +32,13 @@ def update_graph(jsonData, data_dict):
 			del  jsonData[column]['meta']
 
 
-def get_data(sql):
+def get_data(sql, params=None):
 	
 	connection = get_connection()
-	data = pd.read_sql(sql, connection)
+	if params:
+		data = pd.read_sql(sql, connection, params=params)
+	else:
+		data = pd.read_sql(sql, connection)
+
 	connection.close()
 	return data

@@ -3,13 +3,13 @@
     <img src="../assets/app-logo.svg" />
     <div id="input">
       <code-input v-model="code"></code-input>
-      <button id="ok-button" v-bind:class="{ active: isActive}">Neste</button>
+      <button id="ok-button" v-bind:class="{ active: isActive}" v-on:click="handleClick">Neste</button>
     </div>
   </div>
 </template>
 
 <script>
-import CodeInput from "./CodeInput.vue";
+import CodeInput from "@/components/CodeInput.vue";
 
 export default {
   components: {
@@ -20,6 +20,13 @@ export default {
       code: "",
       isActive: false
     };
+  },
+  methods: {
+    handleClick() {
+      if (this.isActive) {
+        //router.push();
+      }
+    }
   },
 
   watch: {

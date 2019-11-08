@@ -20,8 +20,9 @@ const routes = [
   {
     path: "/:eventCode",
     name: "rating-page",
-    component: RatingPage
-  }
+    component: RatingPage,
+    props: true,
+  },
 ];
 
 const router = new VueRouter({

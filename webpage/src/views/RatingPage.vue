@@ -34,6 +34,9 @@ export default {
   components: {
     RatingButton
   },
+  props: {
+    eventCode: String
+  },
   data() {
     return {
       text: "",

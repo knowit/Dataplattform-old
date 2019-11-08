@@ -1,42 +1,52 @@
 <template>
   <div id="app">
-    <!--<img alt="Vue logo" src="./assets/logo.png">-->
-    <!--<HelloWorld msg="Welcome to Your Vue.js App"/>-->
-    <rating-page></rating-page>
+    <start-page></start-page>
   </div>
 </template>
 
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
-import RatingPage from './components/RatingPage.vue'
+import StartPage from "./components/StartPage.vue";
 
 export default {
-  name: 'app',
+  name: "app",
   components: {
-    RatingPage
+    StartPage
   },
 
   methods: {
-    ratingClick: (rating) => {
-      alert(`You pressed ${rating}`)
+    ratingClick: rating => {
+      alert(`You pressed ${rating}`);
     }
-  },
-}
+  }
+};
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
 #app {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 }
 
 :root {
   --btn-blue: #4573E3;
 }
 
+html {
+  background-color: #f1f0ed;
+  height: 100vh;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+}
 </style>

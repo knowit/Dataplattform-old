@@ -13,13 +13,13 @@
         class="rating-btn"
       ></rating-button>
     </div>
-    <div id="txt-container" v-if="step===2">
+    <div id="feedback-container" v-if="step===2">
       <label for="feedback">Hva likte du? Hva kunne vært bedre? (Valgfritt)</label>
       <br />
       <textarea v-model="text" id="feedback"></textarea>
       <div id="nav-btn-container">
         <button class="nav-btn back-btn" @click="step--">Tilbake</button>
-        <button class="nav-btn next-btn" @click="step++">Neste</button>
+        <button class="nav-btn next-btn" @click="finish">Ferdig</button>
       </div>
     </div>
   </div>
@@ -27,6 +27,7 @@
 
 <script>
 import RatingButton from "@/components/RatingButton.vue";
+import router from "../router";
 
 export default {
   name: "RatingPage",
@@ -44,12 +45,13 @@ export default {
     ratingClick(rating) {
       alert(`Pressed: ${rating}`);
       this.step++;
+    },
+    finish() {
+      router.push("finished");
     }
   },
   beforeRouteLeave(to, from, next) {
-    // eslint-disable-next-line
-    console.log("Before Leave");
-    if (this.step > 1) {
+    if (this.step === 2 && to.name !== "finished") {
       this.step--;
       return next(false);
     }
@@ -67,7 +69,7 @@ export default {
   flex-shrink: 0;
 }
 
-#txt-container {
+#feedback-container {
   display: flex;
   flex-direction: column;
   align-items: flex-start;

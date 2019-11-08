@@ -1,11 +1,19 @@
 <template>
-  <div id="div">
-    <button id="button" :style="style" v-on:click="click">{{ btnText }}</button>
-  </div>
+  <button id="button" :class="style" v-on:click="click">{{ btnText }}</button>
 </template>
 
 <script>
 export default {
+  data() {
+    return {
+      style: {
+        negative: this.btnType === -1,
+        neutral: this.btnType === 0,
+        positive: this.btnType === 1
+      }
+    };
+  },
+
   props: {
     btnType: {
       validator: function(value) {
@@ -15,17 +23,6 @@ export default {
   },
 
   computed: {
-    style: function() {
-      if (this.btnType === -1) {
-        return "background-color: #FF615F";
-      } else if (this.btnType === 0) {
-        return "background-color: #FFFB5F";
-      } else if (this.btnType === 1) {
-        return "background-color: #5FFF8E";
-      } else {
-        return "";
-      }
-    },
     btnText: function() {
       if (this.btnType === -1) {
         return ":(";
@@ -47,13 +44,15 @@ export default {
 </script>
 
 <style scoped>
-#button {
-  font-size: 18pt;
-  height: 9em;
-  width: 9em;
-  /* padding: 48px; */
-  border-radius: 50%;
-  border: none;
-  margin: 1em;
+.negative {
+  background-color: #ff615f;
+}
+
+.neutral {
+  background-color: #fffb5f;
+}
+
+.positive {
+  background-color: #5fff8e;
 }
 </style>

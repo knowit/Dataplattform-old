@@ -1,5 +1,5 @@
 <template>
-  <button id="button" :class="style" v-on:click="click">{{ btnText }}</button>
+  <button id="button" :class="style" v-on:click="click"></button>
 </template>
 
 <script>
@@ -22,19 +22,19 @@ export default {
     }
   },
 
-  computed: {
-    btnText: function() {
-      if (this.btnType === -1) {
-        return ":(";
-      } else if (this.btnType === 0) {
-        return ":|";
-      } else if (this.btnType === 1) {
-        return ":)";
-      } else {
-        return "";
-      }
-    }
-  },
+  // computed: {
+  //   btnText: function() {
+  //     if (this.btnType === -1) {
+  //       return ":(";
+  //     } else if (this.btnType === 0) {
+  //       return ":|";
+  //     } else if (this.btnType === 1) {
+  //       return ":)";
+  //     } else {
+  //       return "";
+  //     }
+  //   }
+  // },
   methods: {
     click: function() {
       this.$emit("rating-click", this.btnType);
@@ -44,6 +44,14 @@ export default {
 </script>
 
 <style scoped>
+
+#button {
+  border: 2px solid #FFF;
+  opacity: 1;
+  outline: none;
+  backdrop-filter: blur(50px);
+}
+
 .negative {
   background-color: #ff615f;
 }

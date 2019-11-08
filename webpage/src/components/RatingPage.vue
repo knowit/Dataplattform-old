@@ -1,6 +1,10 @@
 <template>
   <div id="container">
     <div id="rating-btn-container" v-if="step===1">
+      <div id="logo">
+        <img src="@/assets/app-logo.svg" />
+        <p id="event-name">{{eventName}}</p>
+      </div>
       <rating-button
         v-for="i in [1, 0, -1]"
         :key="i"
@@ -10,10 +14,12 @@
       ></rating-button>
     </div>
     <div id="txt-container" v-if="step===2">
+      <label for="feedback">Hva likte du? Hva kunne vært bedre? (Valgfritt)</label>
+      <br />
       <textarea v-model="text" id="feedback"></textarea>
       <div id="nav-btn-container">
-        <button class="nav-btn back-btn" @click="step--">Back</button>
-        <button class="nav-btn next-btn" @click="step++">Next</button>
+        <button class="nav-btn back-btn" @click="step--">Tilbake</button>
+        <button class="nav-btn next-btn" @click="step++">Neste</button>
       </div>
     </div>
   </div>
@@ -30,7 +36,8 @@ export default {
   data() {
     return {
       text: "",
-      step: 1
+      step: 1,
+      eventName: "Test test test"
     };
   },
   methods: {
@@ -45,7 +52,16 @@ export default {
 <style scoped>
 #container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#txt-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 #feedback {
@@ -54,12 +70,20 @@ export default {
   border-style: none;
   resize: none;
   height: 15em;
-  width: 50em;
+  width: 48em;
+  padding: 2em;
+  font: 400 14px "Roboto", sans-serif;
 }
 
 #nav-btn-container {
   display: flex;
   justify-content: flex-end;
+  width: 100%;
+}
+
+#logo {
+  position: relative;
+  top: -128px;
 }
 
 .rating-btn {
@@ -75,13 +99,27 @@ export default {
 .nav-btn {
   font-size: 14px;
   padding: 1em 3em;
+  font: 400 12px "Roboto", sans-serif;
+  margin-left: 2em;
+  margin-top: 1em;
+  border-radius: 2px;
 }
 
 .next-btn {
   background-color: var(--btn-blue);
+  border: none;
+  color: #fff;
 }
 
 .back-btn {
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
+  border: 2px solid #949494;
+  color: #696969;
+}
+
+#event-name {
+  color: #707070;
+  font: 400 19px "Roboto", sans-serif;
+  letter-spacing: 0;
 }
 </style>

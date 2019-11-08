@@ -1,25 +1,8 @@
 <template>
   <div id="app">
-    <start-page></start-page>
+    <router-view />
   </div>
 </template>
-
-<script>
-import StartPage from "./components/StartPage.vue";
-
-export default {
-  name: "app",
-  components: {
-    StartPage
-  },
-
-  methods: {
-    ratingClick: rating => {
-      alert(`You pressed ${rating}`);
-    }
-  }
-};
-</script>
 
 <style>
 @import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");

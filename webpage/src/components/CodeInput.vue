@@ -61,7 +61,12 @@ export default {
   opacity: 1;
   text-align: center;
   letter-spacing: 0;
-  color: #707070;
+  color: transparent;
+  text-shadow: 0 0 0 #707070;
   text-transform: uppercase;
+}
+:focus {
+  outline-color: #4c6455;
+  outline-width: 2px;
 }
 </style>

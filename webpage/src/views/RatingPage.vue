@@ -1,15 +1,15 @@
 <template>
   <div id="container">
+    <div id="logo">
+      <img src="@/assets/app-logo.svg" />
+      <p id="event-name">{{eventName}}</p>
+    </div>
     <div id="rating-btn-container" v-if="step===1">
-      <div id="logo">
-        <img src="@/assets/app-logo.svg" />
-        <p id="event-name">{{eventName}}</p>
-      </div>
       <rating-button
         v-for="i in [1, 0, -1]"
         :key="i"
         :btnType="i"
-        v-on:rating-click="step++"
+        @rating-click="step++"
         class="rating-btn"
       ></rating-button>
     </div>
@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import RatingButton from "./RatingButton.vue";
+import RatingButton from "@/components/RatingButton.vue";
 
 export default {
   name: "RatingPage",
@@ -45,6 +45,15 @@ export default {
       alert(`Pressed: ${rating}`);
       this.step++;
     }
+  },
+  beforeRouteLeave(to, from, next) {
+    // eslint-disable-next-line
+    console.log("Before Leave");
+    if (this.step > 1) {
+      this.step--;
+      return next(false);
+    }
+    next();
   }
 };
 </script>

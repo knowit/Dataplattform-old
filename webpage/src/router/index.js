@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import StartPage from "../views/StartPage.vue";
-import RatingPage from "../components/RatingPage";
+import RatingPage from "../views/RatingPage.vue";
 
 Vue.use(VueRouter);
 

@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import StartPage from "../views/StartPage.vue";
+import RatingPage from "../components/RatingPage";
 
 Vue.use(VueRouter);
 
@@ -11,11 +12,14 @@ const routes = [
     component: StartPage
   },
   {
-    path: "/:eventCode"
+    path: "/:eventCode",
+    name: "rating-page",
+    component: RatingPage
   }
 ];
 
 const router = new VueRouter({
+  mode: "history",
   routes
 });
 

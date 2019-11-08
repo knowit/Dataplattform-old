@@ -10,6 +10,7 @@
 
 <script>
 import CodeInput from "@/components/CodeInput.vue";
+import router from "../router";
 
 export default {
   components: {
@@ -24,7 +25,7 @@ export default {
   methods: {
     handleClick() {
       if (this.isActive) {
-        //router.push();
+        router.push(this.code);
       }
     }
   },

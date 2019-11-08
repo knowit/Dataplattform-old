@@ -5,7 +5,7 @@
       maxlength="1"
       v-on:keyup="back($event,n)"
       v-on:input="next($event, n)"
-      v-model="text[n]"
+      v-model="text[n-1]"
       ref="input"
       v-for="n in 5"
       :key="n"
@@ -22,16 +22,22 @@ export default {
     };
   },
 
+  watch: {
+    text: function(newText) {
+      this.$emit("input", newText.join("").toUpperCase());
+    }
+  },
+
   methods: {
     next(event, n) {
-      if (this.text[n] && this.text[n] !== " " && n < 5) {
+      if (this.text[n - 1] && this.text[n - 1] !== " " && n < 5) {
         this.$refs.input[n].focus();
       }
     },
     back(event, n) {
       if (
         event.key === "Backspace" &&
-        (!this.text[n] || this.text[n] === "") &&
+        (!this.text[n - 1] || this.text[n - 1] === "") &&
         n > 1
       ) {
         this.$refs.input[n - 2].focus();
@@ -43,16 +49,19 @@ export default {
 
 <style scoped>
 .input-field {
+  width: 1.3em;
+  height: 1.3em;
+  font: Regular 20px/24px Roboto;
   font-size: 25px;
-  padding: 11px 45px;
+  margin-right: 5px;
+  margin-left: 5px;
   background: #ffffff 0% 0% no-repeat padding-box;
-  border: 2px solid #e3e3e3;
-  border-radius: 8px;
+  border: none;
+  border-radius: 2px;
   opacity: 1;
   text-align: center;
-  font: Regular 28px/32px Arial;
   letter-spacing: 0;
   color: #707070;
-  width: 1em;
+  text-transform: uppercase;
 }
 </style>

@@ -2,8 +2,8 @@
   <div id="div">
     <img src="../assets/app-logo.svg" />
     <div id="input">
-      <code-input></code-input>
-      <button id="ok-button">OK</button>
+      <code-input v-model="code"></code-input>
+      <button id="ok-button" v-bind:class="{ active: isActive}">Neste</button>
     </div>
   </div>
 </template>
@@ -17,12 +17,14 @@ export default {
   },
   data() {
     return {
-      code: ""
+      code: "",
+      isActive: false
     };
   },
-  methods: {
-    reverseCode: function() {
-      this.code = "hehe";
+
+  watch: {
+    code: function() {
+      this.isActive = this.code.length === 5;
     }
   }
 };
@@ -41,16 +43,19 @@ export default {
 }
 
 #ok-button {
-  font-size: 25px;
+  width: 91%;
   padding: 11px 13px;
-  background: #e3e3e3 0% 0% no-repeat padding-box;
-  border: 2px solid #e3e3e3;
-  border-radius: 8px;
+  background: #949494 0% 0% no-repeat padding-box;
+  border: none;
+  border-radius: 2px;
   opacity: 1;
   text-align: center;
-  font: Regular 28px/32px Arial;
+  font: Regular 12px/14px Roboto;
   letter-spacing: 0;
-  color: #afafaf;
-  margin-left: 8px;
+  color: #ffffff;
+  margin-top: 10px;
+}
+.active {
+  background-color: #4573e3 !important;
 }
 </style>

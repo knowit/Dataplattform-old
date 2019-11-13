@@ -23,7 +23,7 @@ colors = {
 tabs_colors = {
     'border': "#B7DEBD",
     'primary': "black",
-    'background': "#B7DEBD",
+    'background': "#DBEEDE",
 }
 
 
@@ -37,7 +37,7 @@ tab_style = {
 tab_selected_style = {
     'borderTop': '1px solid #d6d6d6',
     'borderBottom': '1px solid #d6d6d6',
-    'backgroundColor': '#f2f9ff',
+    'backgroundColor': '#B7DEBD',
     'color': '#333333',
     'font-family': 'Arial',
     'font-size': '100%',
@@ -130,7 +130,7 @@ def register_callbacks(app):
                 'labels': ['Positive', 'Neutral', 'Negative'],
                 'values': [df_pie['positive_count'], df_pie['neutral_count'], df_pie['negative_count']],
                 'type': 'pie',
-                'marker': {'colors': ['#55A868', '#ECEE70', '#BE4B27']
+                'marker': {'colors': ['#5FFF8E', '#FFFB5F', '#FF615F']
                 }
             }]
 

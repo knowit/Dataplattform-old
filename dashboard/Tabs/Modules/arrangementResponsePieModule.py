@@ -36,7 +36,7 @@ class ArrangementResponsePieModule(abstractModule):
         )
 
         fig = Pie([0, 0, 0], ['Positive', 'Neutral', 'Negative'],
-                  colors=['#55A868', '#ECEE70', '#BE4B27'])
+                  colors=['#5FFF8E', '#FFFB5F', '#FF615F'])
 
         self.dccGraph = dcc.Graph(id='event_pie', figure=fig.get_trace(), style=self.graph_style)
 

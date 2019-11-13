@@ -65,7 +65,7 @@ class ArrangementResponseBarModule(abstractModule):
         fig = Bar(
             df, data_layout=[["labels", "positive_count"], ["labels", "neutral_count"],
                              ["labels", "negative_count"]],
-            colors=['#55A868', '#ECEE70', '#BE4B27'],
+            colors=['#5FFF8E', '#FFFB5F', '#FF615F'],
             title="Respons på siste arrangementer", axis_text=["Arrangement", "Stemmer"],
             names=["Positiv", "Nøytral", "Negative"], show_legend=True,
             show_yaxis_text=False, barmode="stack")

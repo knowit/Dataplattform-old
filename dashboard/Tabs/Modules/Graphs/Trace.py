@@ -7,7 +7,7 @@ from typing import Union
 class Trace():
 
 	def __init__(self, data, data_layout = [], trace_mode="lines",
-			trace_type="scatter", colors = ["#0c956e", "blue", "red"],
+			trace_type="scatter", colors = ["#0c956e", "#003299", "red"],
 			title="", names=[], shape=["linear"], smoothing=[0.8], 
 			axis_text=["X-axis", "Y-axis"], axis_type=["linear", "linear"],
 			plot_bgcolor="#ffffff", grid_color="rgba(0, 0, 0, 0.1)", 
@@ -165,6 +165,12 @@ class Pie():
 		]
 
 		layout = {
+			"margin": go.layout.Margin(
+        l=20,
+        r=20,
+        b=20,
+        t=20
+    ),
 			"title": {
 				"text": title,
 

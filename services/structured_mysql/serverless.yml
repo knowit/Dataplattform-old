@@ -33,6 +33,8 @@ provider:
   name: aws
   stage: test
   region: eu-central-1
+  deploymentBucket:
+    name: dataplattform-deploymentbucket
   runtime: python3.7
   memorySize: 1024
   timeout: 60

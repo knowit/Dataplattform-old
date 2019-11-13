@@ -7,8 +7,10 @@ custom:
 
 provider:
   name: aws
-  stage: dev
+  stage: test
   region: eu-central-1
+  deploymentBucket:
+    name: dataplattform-deploymentbucket
   stackTags:
     Project: ${self:custom.project}
   tags:

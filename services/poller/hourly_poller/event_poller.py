@@ -67,20 +67,42 @@ def get_events(credsfile, calendar_id):
     events = events_result.get('items', [])
     info = {}
     for event in events:
+        boxes = []
         if 'location' in event:
-            boxes = []
             temp = event['location'].split(',')
             for box in temp:
                 if "Enheter" in box:
                     boxes.append(box.split('-')[-1])
-            if len(boxes) > 0:
-                info[event['id']] = {
-                    'timestamp_from': get_timestamp(event['start']['dateTime']),
-                    'timestamp_to': get_timestamp(event['end']['dateTime']),
-                    'event_summary': event['summary'],
-                    'event_button_name': boxes,
-                    'creator': event['creator']['email'],
-                }
+
+        startTime = ""
+        endTime = 0
+        if "dateTime" in event['start']:
+            startTime = get_timestamp(event['start']['dateTime'])
+        else:
+            timeObject = list(map(int, event['start']['date'].split("-")))
+            startTime = datetime.datetime.timestamp(datetime.datetime(timeObject[0], timeObject[1], timeObject[2]))
+        if "dateTime" in event['end']:
+            endTime = get_timestamp(event['end']['dateTime'])
+        else:
+            timeObject = list(map(int, event['end']['date'].split("-")))
+            endTime = datetime.datetime.timestamp(datetime.datetime(timeObject[0], timeObject[1], timeObject[2]))
+
+        summary = ""
+        if "summary" in event:
+            summary = event["summary"]
+
+        creator = ""
+        if "creator" in event:
+            creator = event['creator']['email']
+
+        info[event['id']] = {
+            'calendar_id': calendar_id,
+            'timestamp_from': startTime,
+            'timestamp_to': endTime,
+            'event_summary': summary,
+            'event_button_name': boxes,
+            'creator': creator,
+        }
     return info
 
 

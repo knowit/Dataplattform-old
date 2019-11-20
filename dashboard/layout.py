@@ -2,6 +2,7 @@ import dash_html_components as html
 #import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 from dash.dependencies import Output, Input, State
+import pandas as pd
 
 from Tabs.slackTab import SlackTab
 from Tabs.twitterTab import TwitterTab
@@ -116,7 +117,6 @@ def register_callbacks(app):
     @app.callback(Output('event_pie', 'figure'),
                   [Input('event_dropdown', 'value')],
                   [State('event_pie', 'figure')])
-
     def chosen_event(value, fig):
         sql_query_pie = "SELECT positive_count, neutral_count, negative_count " \
                                 "FROM Dataplattform.EventRatingType " \
@@ -130,6 +130,53 @@ def register_callbacks(app):
                 'type': 'pie',
                 'marker': {'colors': ['#55A868', '#ECEE70', '#BE4B27']
                 }
+            }]
+
+        return fig
+
+    @app.callback(Output('hashtag_month_bar', 'figure'),
+                  [Input('hashtag_dropdown', 'value')],
+                  [State('hashtag_month_bar', 'figure')])
+    def chosen_hashtag_month(value, fig):
+
+
+        sql_query = "SELECT created, hashtags " \
+                    "FROM Dataplattform.TwitterSearchType " \
+                    "WHERE hashtags <> '' " \
+                    "AND (created BETWEEN '2019-04-01' AND '2019-05-01') " \
+
+        data = get_data(sql_query)
+
+        word_freq = {}
+
+        for hashtags in data['hashtags']:
+            words = hashtags.split()
+            for word in words:
+                if word == "#":
+                    continue
+
+                word = word.lower()
+                if not word.startswith('#'):
+                    word = '#' + word
+
+                if word not in word_freq.keys():
+                    word_freq[word] = 1
+                else:
+                    word_freq[word] += 1
+
+        freq = pd.DataFrame()
+        freq['hashtag'] = word_freq.keys()
+        freq['freq'] = word_freq.values()
+        freq = freq.sort_values(by=['freq'])
+        freq = freq[-10:]
+
+        fig['data'] = [
+            {
+                'y': freq['hashtag'],
+                'x': freq['freq'],
+                'type': 'bar',
+                'orientation': 'h',
+
             }]
 
         return fig

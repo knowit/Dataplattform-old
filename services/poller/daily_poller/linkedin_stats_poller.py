@@ -1,6 +1,7 @@
 import os
 import json
 import requests_oauthlib
+from datetime import datetime
 from poller_util import PollerUtil
 
 SCOPE = ['rw_organization_admin',
@@ -119,8 +120,10 @@ def filter_stats_data(api, data, organization_name):
     # remove paging (pop)
     data.pop('paging')
 
+    retrieved = datetime.now().timestamp()
+
     # add metadata
-    filtered_data = {'name': organization_name, 'source': api, 'data': data}
+    filtered_data = {'retrieved': retrieved, 'name': organization_name, 'source': api, 'data': data}
     return filtered_data
 
 

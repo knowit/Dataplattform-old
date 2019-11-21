@@ -9,11 +9,11 @@ import linkedin_stats_poller
 def lambda_handler(event, context):
     # This is a list of polling methods that should be run once every day.
     pollings = [
-        # ubw_poller.poll,
-        # blog_poller.poll,
-        # yr_poller.poll,
-        # twitter_search_poller.poll,
-        # twitter_account_poller.poll,
+        ubw_poller.poll,
+        blog_poller.poll,
+        yr_poller.poll,
+        twitter_search_poller.poll,
+        twitter_account_poller.poll,
         linkedin_stats_poller.poll
     ]
     errors = 0

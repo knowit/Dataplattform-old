@@ -5,6 +5,7 @@ custom:
   project: Dataplattform-${self:custom.stage}
   daily_poller_lambda: ${self:custom.project}-daily_poller
   hourly_poller_lambda: ${self:custom.project}-hourly_poller
+  ad_poller_lambda: ${self:custom.project}-ad_poller
   pollingStatusTable: ${self:custom.project}-polling_status
   ingest_apikey: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
   insert_apikey: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
@@ -59,6 +60,9 @@ functions:
       DATAPLATTFORM_TWITTER_CONSUMER_KEY: ${ssm:dataplattform_twitter_consumer_key}
       DATAPLATTFORM_TWITTER_ACCESS_SECRET: ${ssm:dataplattform_twitter_access_secret}
       DATAPLATTFORM_TWITTER_ACCESS_TOKEN: ${ssm:dataplattform_twitter_access_token}
+      DATAPLATTFORM_LINKEDIN_CLIENT_ID: ${ssm:dataplattform_linkedin_client_id}
+      DATAPLATTFORM_LINKEDIN_TOKEN: ${ssm:dataplattform_linkedin_token}
+
     events:
       - schedule: rate(1 day)
 
@@ -80,6 +84,32 @@ functions:
       DATAPLATTFORM_PUBLISH_EVENT: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.project}-events
     events:
       - schedule: rate(1 hour)
+
+  ad_poller:
+    handler: ad_poller.handler
+    module: ad_poller
+    name: ${self:custom.ad_poller_lambda}
+    description: ad_poller Lambda
+    role: adPollerRole
+    package:
+      include:
+        - 'ad_poller/*.py'
+    environment:
+      DATAPLATTFORM_INGEST_APIKEY: ${self:custom.ingest_apikey}
+      DATAPLATTFORM_INGEST_URL:
+        'Fn::ImportValue': ${self:custom.project}-ingest-url
+      DATAPLATTFORM_AD_URL: ${ssm:dataplattform_ad_url}
+
+    events:
+      - schedule: rate(1 day)
+
+    vpc:
+      securityGroupIds:
+        - sg-2ca58644 # ON-LAN
+      subnetIds:
+        - subnet-bd8400d5 # ON-LAN1
+        - subnet-9a4981e0 # ON-LAN2
+
 
 resources:
   Resources:
@@ -137,6 +167,21 @@ resources:
                     - "sns:Publish"
                     - "sns:ListTopics"
                   Resource: "*"
+
+    adPollerRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-AdPollerRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
 
 
     PollingStatusTable:

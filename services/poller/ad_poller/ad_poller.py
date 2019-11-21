@@ -2,6 +2,8 @@ import os
 import json
 import urllib.request
 import requests
+from datetime import datetime
+
 
 AD_TYPE = 'ADType'
 
@@ -43,11 +45,13 @@ def poll():
     r = requests.get(url=os.getenv("DATAPLATTFORM_AD_URL"))
     data = r.json()
 
+    retrieved = datetime.now().timestamp()
+
     emps, dis_emps, conts, dis_conts = count_emps(data)
 
-    record = {'count_employees': emps, 'count_discontinued_employees': dis_emps, 'count_subcontractors': conts,
-              'count_discontinued_subcontractors': dis_conts, 'count_all': emps + conts,
-              'count_discontinued_all': dis_emps + dis_conts}
+    record = {'retrieved': retrieved, 'count_employees': emps, 'count_discontinued_employees': dis_emps,
+              'count_subcontractors': conts, 'count_discontinued_subcontractors': dis_conts,
+              'count_all': emps + conts, 'count_discontinued_all': dis_emps + dis_conts}
 
     return record
 

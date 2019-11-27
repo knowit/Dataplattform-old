@@ -78,8 +78,6 @@ functions:
         - 'hourly_poller/creds.json'
     environment:
       DATAPLATTFORM_INSERT_APIKEY: ${self:custom.insert_apikey}
-      DATAPLATTFORM_INSERT_URL:
-        'Fn::ImportValue': ${self:custom.project}-insert-event-url
       DATAPLATTFORM_GOOGLE_CALENDAR_IDS: ${ssm:dataplattform_google_calendar_ids}
       DATAPLATTFORM_PUBLISH_EVENT: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.project}-events
     events:

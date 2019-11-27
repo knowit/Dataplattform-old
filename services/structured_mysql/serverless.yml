@@ -217,17 +217,6 @@ resources:
           - Key: Project
             Value: ${self:custom.project}
   Outputs:
-    InserEventUrl:
-      Description: "insert_event URL"
-      Value:
-        Fn::Join:
-          - ""
-          - - "https://"
-            - Ref: ApiGatewayRestApi
-            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/insert_event/"
-      Export:
-        Name: ${self:custom.project}-insert-event-url
-
     UpdateEventUrl:
       Description: "update_event URL"
       Value:

@@ -23,7 +23,6 @@ def poll():
     for calendar_id in calendar_ids:
         events['data'].update(get_events(creds_file, calendar_id))
 
-    url = os.getenv("DATAPLATTFORM_INSERT_URL")
     insert_key = os.getenv("DATAPLATTFORM_INSERT_APIKEY")
     data = json.dumps(events)
 
@@ -33,9 +32,6 @@ def poll():
         TopicArn=os.getenv("DATAPLATTFORM_PUBLISH_EVENT"),
         Message=data
     )
-
-    print("////////////////////////////////RESPONSE//////////////////////////////")
-    print(response)
 
     return True
 

@@ -35,6 +35,8 @@ resources:
             KeyType: RANGE
         PointInTimeRecoverySpecification:
           PointInTimeRecoveryEnabled: true
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
 
   Outputs: #TODO export actual table names as well?
     RawTableArn:
@@ -44,3 +46,12 @@ resources:
           - Arn
       Export:
         Name: ${self:custom.project}-dynamodb-rawtable-arn
+
+    RawTableStreamArn:
+      Value:
+        Fn::GetAtt:
+          - RawTable
+          - StreamArn
+      Export:
+        Name: ${self:custom.project}-dynamodb-rawtable-streamarn
+

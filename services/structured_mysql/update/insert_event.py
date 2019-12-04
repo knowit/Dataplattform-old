@@ -1,20 +1,20 @@
 import os
 import pymysql
 import json
-from random import randint
-from insert_event_util import EventSQLs
+from insert_event_util import EventQueries
+from typing import Dict, Union, List
 
 
-def handler(event, context):
-    db_connection = _get_db_connection()
+def handler(event: Dict, context) -> Dict[str, Union[str, int]]:
+    db_connection = get_db_connection()
 
-    google_events = _get_google_events(event)
-    db_events = _get_events_from_db_which_are_active_the_next_24_hours(db_connection)
+    google_events = get_google_events(event)
+    db_events = get_events_from_db_which_are_active_the_next_24_hours(db_connection)
 
-    queries = EventSQLs(db_connection, db_events)
+    queries = EventQueries(db_connection, db_events)
 
     # Construct DELETE queries for deleted google events from db
-    google_event_ids = list(google_events.keys())
+    google_event_ids = list(google_events.keys()) if len(google_events) > 0 else []
     for db_event in db_events:
         if db_event['event_id'] not in google_event_ids:
             queries.append_delete_queries_from_event(db_event)
@@ -44,10 +44,10 @@ def handler(event, context):
     }
 
 
-def _get_db_connection() -> pymysql.Connection:
+def get_db_connection() -> pymysql.Connection:
     return pymysql.connect(
         host=os.getenv("DATAPLATTFORM_AURORA_HOST"),
-        port=int(os.getenv("DATAPLATTFORM_AURORA_PORT")),
+        port=int(str(os.getenv("DATAPLATTFORM_AURORA_PORT"))),
         user=os.getenv("DATAPLATTFORM_AURORA_USER"),
         password=os.getenv("DATAPLATTFORM_AURORA_PASSWORD"),
         db=os.getenv("DATAPLATTFORM_AURORA_DB_NAME"),
@@ -55,7 +55,7 @@ def _get_db_connection() -> pymysql.Connection:
         cursorclass=pymysql.cursors.DictCursor)
 
 
-def _get_google_events(event):
+def get_google_events(event: Dict[str, any]) -> Dict[str, Union[str, int]]:
     google_events = {}
     for records in event['Records']:
         google_event = json.loads(records['Sns']['Message'])['data']
@@ -64,7 +64,7 @@ def _get_google_events(event):
     return google_events
 
 
-def _get_events_from_db_which_are_active_the_next_24_hours(db_connection):
+def get_events_from_db_which_are_active_the_next_24_hours(db_connection: pymysql.Connection) -> List[Dict[str, any]]:
     getSavedEventsSql = "SELECT id, event_id, event_button_id, event_code " \
                         "FROM EventRatingType " \
                         "WHERE ( timestamp_from < unix_timestamp() + 60*60*24 " \
@@ -72,7 +72,7 @@ def _get_events_from_db_which_are_active_the_next_24_hours(db_connection):
                         "AND (timestamp_from > unix_timestamp() " \
                         "OR timestamp_to > unix_timestamp());"
     cursor = db_connection.cursor()
-    db_events = {}
+    db_events: List[Dict[str, any]] = []
     try:
         cursor.execute(getSavedEventsSql)
         db_events = cursor.fetchall()

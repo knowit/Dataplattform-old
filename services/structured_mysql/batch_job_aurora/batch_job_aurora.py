@@ -23,7 +23,21 @@ DEFAULT_TYPES = [
     "YrType",
     "TwitterSearchType",
     "TwitterAccountType",
-    "ADType"
+    "ADType",
+    "LinkedInPageStatisticsBySeniorityType",
+    "LinkedInPageStatisticsByCountryType",
+    "LinkedInPageStatisticsByIndustryType",
+    "LinkedInPageStatisticsByStaffCountRangeType",
+    "LinkedInPageStatisticsByRegionType",
+    "LinkedInPageStatisticsByFunctionType",
+    "LinkedInPageStatisticsTotalType",
+    "LinkedInFollowerCountsByRegionType",
+    "LinkedInFollowerCountsBySeniorityType",
+    "LinkedInFollowerCountsByIndustryType",
+    "LinkedInFollowerCountsByStaffCountRangeType",
+    "LinkedInFollowerCountsByFunctionType",
+    "LinkedInFollowerCountsByCountryType",
+    "LinkedInTotalShareStatisticsType",
 ]
 
 # Assume running hourly by default. Request the last 1h10m of data.
@@ -74,7 +88,10 @@ def get_relevant_attrs(docs, type, sql_connection):
             if data_type_object.accept_document(doc):
                 column_values = data_type_object.get_column_values(doc)
                 if data_type_object.accept_row(column_values):
-                    output.append(column_values)
+                    if isinstance(column_values, list):
+                        output += column_values
+                    else:
+                        output.append(column_values)
         except:
             n_errors += 1
     return output, n_errors
@@ -167,6 +184,15 @@ def format_url(base_url, type, timestamp_from, timestamp_to, just_url=True):
     return base_url + type + "?" + query
 
 
+def get_sql_type(data_type):
+    if data_type.startswith("LinkedInFollowerCounts"):
+        return "LinkedInFollowerCountsType"
+    elif data_type.startswith("LinkedInPageStatistics"):
+        return "LinkedInPageStatisticsType"
+    else:
+        return data_type
+
+
 def main(types, timestamp_from, timestamp_to):
     base_url = os.getenv("DATAPLATTFORM_FETCH_URL")
 
@@ -185,8 +211,9 @@ def main(types, timestamp_from, timestamp_to):
     for type in types:
         url = format_url(base_url, type, timestamp_from, timestamp_to)
         docs = fetch_data_url(url)
-        sql_format, n_errors = get_relevant_attrs(docs, type, connection)
-        n_records, n_duplicates = insert_data_into_db(connection, sql_format, type)
+        sql_type = get_sql_type(type)
+        sql_format, n_errors = get_relevant_attrs(docs, sql_type, connection)
+        n_records, n_duplicates = insert_data_into_db(connection, sql_format, sql_type)
         counter += n_records
         duplicates += n_duplicates
         errors += n_errors

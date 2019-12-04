@@ -7,18 +7,38 @@ from poller_util import PollerUtil
 SCOPE = ['rw_organization_admin',
          'r_organization_social']
 
-LINKEDIN_STATS_TYPE = "LinkedInStatsType"
-
 LINKEDIN_ORGS = {
     "knowit ab": "urn:li:organization:8067",
     "knowit solutions": "urn:li:organization:15179956",
 }
 
 LINKEDIN_APIS = {
-    "FOLLOWER_STATS_API": "https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=",
-    "PAGE_STATS_API": "https://api.linkedin.com/v2/organizationPageStatistics?q=organization&organization=",
-    "SHARE_STATS_API": "https://api.linkedin.com/v2/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity="
+    "FOLLOWER_STATS_API": "https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?"
+                          "q=organizationalEntity&organizationalEntity=",
+    "PAGE_STATS_API": "https://api.linkedin.com/v2/organizationPageStatistics?"
+                      "q=organization&organization=",
+    "SHARE_STATS_API": "https://api.linkedin.com/v2/organizationalEntityShareStatistics?"
+                       "q=organizationalEntity&organizationalEntity="
 }
+
+DATA_TYPES = {
+    "pageStatisticsBySeniority": "LinkedInPageStatisticsBySeniorityType",
+    "pageStatisticsByCountry": "LinkedInPageStatisticsByCountryType",
+    "pageStatisticsByIndustry": "LinkedInPageStatisticsByIndustryType",
+    "pageStatisticsByStaffCountRange": "LinkedInPageStatisticsByStaffCountRangeType",
+    "pageStatisticsByRegion": "LinkedInPageStatisticsByRegionType",
+    "pageStatisticsByFunction": "LinkedInPageStatisticsByFunctionType",
+    "totalPageStatistics": "LinkedInPageStatisticsTotalType",
+    "followerCountsByAssociationType": "LinkedInFollowerCountsByAssociationType",
+    "followerCountsByRegion": "LinkedInFollowerCountsByRegionType",
+    "followerCountsBySeniority": "LinkedInFollowerCountsBySeniorityType",
+    "followerCountsByIndustry": "LinkedInFollowerCountsByIndustryType",
+    "followerCountsByStaffCountRange": "LinkedInFollowerCountsByStaffCountRangeType",
+    "followerCountsByFunction": "LinkedInFollowerCountsByFunctionType",
+    "followerCountsByCountry": "LinkedInFollowerCountsByCountryType",
+    "totalShareStatistics": "LinkedInTotalShareStatisticsType"
+}
+
 
 def authenticate():
 
@@ -33,6 +53,7 @@ def authenticate():
 
     return client
 
+
 def poll():
     client = authenticate()
 
@@ -40,7 +61,9 @@ def poll():
         data_points = poll_stats_data(client, LINKEDIN_ORGS[key], key)
 
         for data_point in data_points:
-            PollerUtil.post_to_ingest_api(data_point, LINKEDIN_STATS_TYPE)
+            for data_point_key in data_point.keys():
+                PollerUtil.post_to_ingest_api(data_point[data_point_key], data_point_key)
+
 
 def poll_stats_data(client, organization_id, organization_name):
     data_points = []
@@ -49,81 +72,64 @@ def poll_stats_data(client, organization_id, organization_name):
         query = LINKEDIN_APIS[api]+organization_id
         response = client.get(query)
         data = json.loads(response.content)
-        data = filter_stats_data(api, data, organization_name)
-        data_points.append(data)
+        time_fetched = datetime.now().strftime("%Y-%m-%d")
+        data_points = filter_stats_data(api, data, organization_name, time_fetched, data_points)
 
     return data_points
 
 
-def filter_stats_data(api, data, organization_name):
-    data = json.dumps(data)
+def filter_stats_data(api, data, organization_name, time_fetched, data_points):
 
-    if api == "PAGE_STATS_API":
+    for element in data['elements']:
+        for key in element:
+            if key not in DATA_TYPES.keys():
+                continue
+            if api == "FOLLOWER_STATS_API":
+                data_points.append(follower_statistics_filter(element[key], key, organization_name, time_fetched))
+            elif api == "PAGE_STATS_API":
+                data_points.append(page_statistics_filter(element[key], key, organization_name, time_fetched))
+            elif api == "SHARE_STATS_API":
+                data_points.append(share_statistics_filter(element[key], key, organization_name, time_fetched))
 
-        # shorten allPageViews
-        data = data.replace("allPageViews", "all")
-        data = data.replace("allDesktopPageViews", "allD")
-        data = data.replace("allMobilePageViews", "allM")
+    return data_points
 
-        # shorten careersPageViews
-        data = data.replace("careersPageViews", "C")
-        data = data.replace("desktopCareersPageViews", "dC")
-        data = data.replace("mobileCareersPageViews", "mC")
 
-        # shorten jobsPageViews
-        data = data.replace("jobsPageViews", "j")
-        data = data.replace("desktopJobsPageViews", "dJ")
-        data = data.replace("mobileJobsPageViews", "mJ")
+def follower_statistics_filter(data, key, page, time):
+    data_type = DATA_TYPES[key]
+    data_string = json.dumps(data)
 
-        # shorten lifeAtPageViews
-        data = data.replace("lifeAtPageViews", "l")
-        data = data.replace("desktopLifeAtPageViews", "dL")
-        data = data.replace("mobileLifeAtPageViews", 'mL')
+    #shorten keys in dict
+    data_string = data_string.replace("organicFollowerCount", "organic")
+    data_string = data_string.replace("paidFollowerCount", "paid")
 
-        # shorten overviewPageViews
-        data = data.replace("overviewPageViews", 'o')
-        data = data.replace("desktopOverviewPageViews", "dO")
-        data = data.replace("mobileOverviewPageViews", 'mO')
+    data = json.loads(data_string)
+    filtered_data = {'page': page, 'time': time, 'data': data}
 
-        # shorten insightsPageViews
-        data = data.replace("insightsPageViews", "i")
-        data = data.replace("desktopInsightsPageViews", "dI")
-        data = data.replace("mobileInsightsPageViews", "mI")
+    return {data_type: filtered_data}
 
-        # shorten aboutPageViews
-        data = data.replace("aboutPageViews", "a")
-        data = data.replace("desktopAboutPageViews", "dA")
-        data = data.replace("mobileAboutPageViews", "mA")
 
-        # shorten peoplePageViews
-        data = data.replace("peoplePageViews", "pe")
-        data = data.replace("desktopPeoplePageViews", "dPe")
-        data = data.replace("mobilePeoplePageViews", "mPe")
+def page_statistics_filter(data, key, page, time):
+    data_type = DATA_TYPES[key]
+    data_string = json.dumps(data)
 
-        # shorten pageStatistics
-        data = data.replace("pageStatistics", "pS")
+    #shorten keys in dict
+    data_string = data_string.replace("pageViews", "v")
+    data_string = data_string.replace("PageViews", "")
+    data_string = data_string.replace("mobile", "m")
+    data_string = data_string.replace("desktop", "d")
+    data_string = data_string.replace("Desktop", "D")
+    data_string = data_string.replace("Mobile", "M")
 
-        # shorten pageViews
-        data = data.replace("pageViews", "pV")
+    data = json.loads(data_string)
+    filtered_data = {'page': page, 'time': time, 'data': data}
 
-    elif api == "FOLLOWER_STATS_API":
+    return {data_type: filtered_data}
 
-        # change followerCounts to fC
-        data = data.replace("followerCounts", "fC")
-        # change organicFollowerCount to ofC
-        data = data.replace("organicFollowerCount", "ofC")
-        # change paidFollowerCount to pfC
-        data = data.replace("paidFollowerCount", "pfC")
 
-    data = json.loads(data)
+def share_statistics_filter(data, key, page, time):
+    data_type = DATA_TYPES[key]
+    filtered_data = {'page': page, 'time': time, 'data': data}
 
-    # remove paging (pop)
-    data.pop('paging')
-
-    retrieved = datetime.now().timestamp()
-
-    # add metadata
-    filtered_data = {'retrieved': retrieved, 'name': organization_name, 'source': api, 'data': data}
-    return filtered_data
+    return {data_type: filtered_data}
 
 

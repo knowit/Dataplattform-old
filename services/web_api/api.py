@@ -21,5 +21,5 @@ def get_event_code(event, _) -> Dict[str, int]:
 
     return {
         'statusCode': 200,
-        'body': len(result) == 0
+        'body': result
     }

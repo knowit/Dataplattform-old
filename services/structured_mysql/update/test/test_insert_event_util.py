@@ -86,8 +86,6 @@ class TestInsertEventUtil:
             'timestamp_to=1575396000, event_summary="Rust kodekveld", creator="thomas.tokje@knowit.no", '
             'event_code="12345", event_id="fake_event_id";'
         ]
-        print(real)
-        print(test)
         assert real == test
 
     def test_append_delete_queries_from_event(self, monkeypatch, db_connection, db_events):

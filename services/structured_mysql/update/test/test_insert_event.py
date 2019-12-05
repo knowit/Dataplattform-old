@@ -194,8 +194,6 @@ class TestInsertEvent:
                     'creator="thomas.tokje@knowit.no", event_id="3mbuq0b4pciqef8qghu4ouc715", event_code="01096";']
 
                 for (real, test) in zip(real_list_of_queries, test_list_of_queries):
-                    print(real)
-                    print(test)
                     assert real == test
 
             monkeypatch.setattr(insert_event_util.EventQueries, 'execute_sql_queries', execute_sql_queries_stub)

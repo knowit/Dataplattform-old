@@ -10,3 +10,4 @@ pip3 install events_slack_app/slack_command/
 pip3 install poller/daily_poller/
 pip3 install structured_mysql/batch_job_aurora/
 pip3 install integration_tests/util/
+pip3 install web_api/

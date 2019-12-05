@@ -1,0 +1,216 @@
+service: dataplattform-structured-mysql
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  project: Dataplattform-${self:custom.stage}
+  web_api_lambda: ${self:custom.project}-web_api
+  apikeys:
+    update_event: ${ssm:dataplattform_${self:custom.stage}_update_event_apikey}
+    insert_event: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
+
+  database_name: Dataplattform
+  database_port: 3306
+  db:
+    prod: db.t2.medium
+    dev: db.t2.small
+    test: db.t2.small
+  securityGroups:
+    prod: 'sg-0583a4e1657cfded3' # DATAPLATTFORM-QUICKSIGHT-IRELAND
+    dev: 'sg-0b7bf5c0a1440eae6' # ALLOW_TRAVIS_TO_MYSQLAURORA
+    test: 'sg-0b7bf5c0a1440eae6' # ALLOW_TRAVIS_TO_MYSQLAURORA
+  creds:
+    user: admin # TODO Hmm
+    password: ${ssm:dataplattform_aurora_${self:custom.stage}_password}
+  pythonRequirements:
+    useDownloadCache: true
+    useStaticCache: true
+
+  output:
+    file: ../integration_tests/structured_mysql.serverless_outputs_${self:custom.stage}.json
+
+provider:
+  name: aws
+  stage: prod
+  region: eu-central-1
+  deploymentBucket:
+    name: dataplattform-deploymentbucket
+  runtime: python3.7
+  memorySize: 1024
+  timeout: 120
+  apiKeys:
+    - name: ${self:custom.project}-update_event-apikey
+      value: ${self:custom.apikeys.update_event}
+    - name: ${self:custom.project}-insert_event-apikey
+      value: ${self:custom.apikeys.insert_event}
+
+  stackTags:
+    Project: ${self:custom.project}
+  tags:
+    Project: ${self:custom.project}
+
+
+package:
+  individually: true
+  exclude:
+    - "./**"
+
+functions:
+  get_event_code:
+    handler: api.get_event_code
+    events:
+      - http:
+          path: event_codes/{id}
+          method: get
+    module: web_api
+    name: ${self:custom.web_api_lambda}
+    description: Web API for Dataplattform
+    role: webAPIRole
+    package:
+      include:
+        - 'api/*.py'
+    environment:
+      DATAPLATTFORM_AURORA_HOST:
+        Fn::GetAtt:
+          - auroraCluster
+          - Endpoint.Address
+      DATAPLATTFORM_AURORA_PORT: ${self:custom.database_port}
+      DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
+      DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
+      DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
+      DATAPLATTFORM_FETCH_APIKEY: ${ssm:dataplattform_${self:custom.stage}_batch_job_apikey}
+      DATAPLATTFORM_FETCH_URL:
+        'Fn::ImportValue': ${self:custom.project}-get-docs-url
+      DATAPLATTFORM_OAUTH_SLACK_TOKEN: ${ssm:dataplattform_slack_event_oauth}
+      DATAPLATTFORM_EVENT_CODE_TABLE:
+        'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-name
+    vpc:
+      securityGroupIds:
+        - sg-2ca58644 # ON-LAN
+      subnetIds:
+        - subnet-bd8400d5 # ON-LAN1
+        - subnet-9a4981e0 # ON-LAN2
+
+resources:
+  Resources:
+    webAPIRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-WebAPIRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        Policies:
+          - PolicyName: ${self:custom.project}-eventtable-readonly
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:GetItem
+                    - dynamodb:Scan
+                    - dynamodb:Query
+                  Resource:
+                    - 'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-arn
+
+    auroraCluster:
+      # TODO export cloudwatch logs?
+      Type: AWS::RDS::DBCluster
+      Properties:
+        BackupRetentionPeriod: 2 # TODO increase for prod?
+        DatabaseName: ${self:custom.database_name}
+        DBClusterIdentifier: ${self:custom.project}
+        DBClusterParameterGroupName: default.aurora-mysql5.7
+        DeletionProtection: false # TODO true for prod
+        EnableIAMDatabaseAuthentication: false
+        Engine: aurora-mysql
+        EngineMode: provisioned
+        EngineVersion: '5.7.12'
+        MasterUsername: admin
+        MasterUserPassword: ${self:custom.creds.password}
+        Port: 3306
+        StorageEncrypted: true
+        Tags:
+          - Key: Project
+            Value: ${self:custom.project}
+        DBSubnetGroupName: 'default-vpc-02f9ab9c69358eb52'
+        VpcSecurityGroupIds:
+          - 'sg-0c9b4ed623306c437' # DATAPLATTFORM-ALLOW-KNOWIT
+          - ${self:custom.securityGroups.${self:custom.stage}}
+    mysqlDBInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        AllowMajorVersionUpgrade: false
+        AutoMinorVersionUpgrade: true
+        Engine: aurora-mysql
+        PubliclyAccessible: true
+        DBClusterIdentifier: !Ref "auroraCluster"
+        DBInstanceClass: ${self:custom.db.${self:custom.stage}}
+        DBInstanceIdentifier: ${self:custom.project}-master
+        DBParameterGroupName: default.aurora-mysql5.7
+        DBSubnetGroupName: default-vpc-02f9ab9c69358eb52
+        Tags:
+          - Key: Project
+            Value: ${self:custom.project}
+  Outputs:
+    InserEventUrl:
+      Description: "insert_event URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/insert_event/"
+      Export:
+        Name: ${self:custom.project}-insert-event-url
+
+    UpdateEventUrl:
+      Description: "update_event URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/update_event/"
+      Export:
+        Name: ${self:custom.project}-update-event-url
+
+    auroraClusterRWEndpoint:
+      Description: "Read/write endpoint for aurora cluster"
+      Value:
+        Fn::GetAtt:
+          - auroraCluster
+          - Endpoint.Address
+      Export:
+        Name: ${self:custom.project}-aurora-endpoint-rw
+    auroraClusterROEndpoint:
+      Description: "Read only endpoint for aurora cluster"
+      Value:
+        Fn::GetAtt:
+          - auroraCluster
+          - ReadEndpoint.Address
+      Export:
+        Name: ${self:custom.project}-aurora-endpoint-ro
+    auroraDBUser:
+      Value: ${self:custom.creds.user}
+    auroraDBPassword:
+      Value: ${self:custom.creds.password}
+    auroraDBPort:
+      Value: ${self:custom.database_port}
+    auroraDBName:
+      Value: ${self:custom.database_name}
+    webAPILambda:
+      Value: ${self:custom.web_api_lambda}
+    region:
+      Value: ${self:provider.region}
+
+
+plugins:
+  - serverless-python-requirements
+  - serverless-stack-output

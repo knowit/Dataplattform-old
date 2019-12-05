@@ -82,7 +82,7 @@ class EventQueries:
             "event_button_name": 'NULL'
         }
 
-        event_boxes_for_event_left_to_check = event['event_button_name']
+        event_boxes_for_event_left_to_check = event['event_button_names']
 
         insert_sql_queries = []
         while True:

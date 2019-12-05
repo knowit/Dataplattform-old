@@ -78,6 +78,7 @@ functions:
         'Fn::ImportValue': ${self:custom.project}-insert-event-url
       DATAPLATTFORM_GOOGLE_CALENDAR_IDS: ${ssm:dataplattform_google_calendar_ids}
       DATAPLATTFORM_PUBLISH_EVENT: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.project}-events
+      DATAPLATFORM_GOOGLE_CALENDAR_CREDENTIALS: ${ssm:dataplattform_google_calendar_credentials}
     events:
       - schedule: rate(1 hour)
 

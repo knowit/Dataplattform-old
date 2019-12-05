@@ -1,18 +1,15 @@
 import datetime
-import os
 import googleapiclient.discovery
-import json
-import urllib.request
-import urllib.parse
 import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
 import boto3
+import os
+import json
 
 
 def poll():
-    creds_file = 'creds.json'
-    if not os.path.exists(creds_file):
-        print("No creds file")
+    creds_file = os.getenv('DATAPLATTFORM_GOOGLE_CALENDAR_CREDENTIALS')
+    creds_file = json.loads(creds_file)
 
     calendar_ids = os.getenv("DATAPLATTFORM_GOOGLE_CALENDAR_IDS").split(',')
 
@@ -47,7 +44,8 @@ def get_events(credsfile, calendar_id):
     :return: A dictionary containing (max 10) of the events in the nearest future from this
     specific calendar_id.
     """
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(credsfile, [
+
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(credsfile, [
         'https://www.googleapis.com/auth/calendar.readonly'])
 
     http = httplib2.Http()
@@ -100,7 +98,7 @@ def get_events(credsfile, calendar_id):
             'timestamp_from': startTime,
             'timestamp_to': endTime,
             'event_summary': summary,
-            'event_button_name': boxes,
+            'event_button_names': boxes,
             'creator': creator,
         }
     return info

@@ -52,27 +52,27 @@ class TestInsertEvent:
                             "3mbuq0b4pciqef8qghu4ouc715": {
                                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                                 "timestamp_from": 1575381600, "timestamp_to": 1575396000,
-                                "event_summary": "Rust kodekveld", "event_button_name": [],
+                                "event_summary": "Rust kodekveld", "event_button_names": [],
                                 "creator": "thomas.tokje@knowit.no"},
                             "5sp3pome607cff0pktahpve6pc": {
                                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                                 "timestamp_from": 1575387900, "timestamp_to": 1575391500,
                                 "event_summary": "Speech training with Oslo Speaking Club",
-                                "event_button_name": [], "creator": "alina.kay@knowit.no"},
+                                "event_button_names": [], "creator": "alina.kay@knowit.no"},
                             "755fd38mdr0egjo8i5i6h2lt0l": {
                                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                                 "timestamp_from": 1575554400, "timestamp_to": 1575561600,
-                                "event_summary": "3D-printerkveld", "event_button_name": [],
+                                "event_summary": "3D-printerkveld", "event_button_names": [],
                                 "creator": "ab@knowit.no"},
                             "6bu90333au1rks6sv6370t9qk6": {
                                 "calendar_id": "knowit.no_rsgaebrj8ihghga8scoqu5i6c0@group.calendar.google.com",
                                 "timestamp_from": 1576076400, "timestamp_to": 1576083600,
-                                "event_summary": "Knowit Objectnet Mangekamp: Bowling", "event_button_name": [],
+                                "event_summary": "Knowit Objectnet Mangekamp: Bowling", "event_button_names": [],
                                 "creator": "aulon.mujaj@knowit.no"},
                             "06vllccjqsurk9t7jr695fdnai": {
                                 "calendar_id": "knowit.no_rsgaebrj8ihghga8scoqu5i6c0@group.calendar.google.com",
                                 "timestamp_from": 1576191600, "timestamp_to": 1576278000,
-                                "event_summary": "Julebord", "event_button_name": ['alfa'],
+                                "event_summary": "Julebord", "event_button_names": ['alfa'],
                                 "creator": "marius.backer@knowit.no"}
                         }
                     })
@@ -89,27 +89,27 @@ class TestInsertEvent:
             "3mbuq0b4pciqef8qghu4ouc715": {
                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                 "timestamp_from": 1575381600, "timestamp_to": 1575396000,
-                "event_summary": "Rust kodekveld", "event_button_name": [],
+                "event_summary": "Rust kodekveld", "event_button_names": [],
                 "creator": "thomas.tokje@knowit.no"},
             "5sp3pome607cff0pktahpve6pc": {
                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                 "timestamp_from": 1575387900, "timestamp_to": 1575391500,
                 "event_summary": "Speech training with Oslo Speaking Club",
-                "event_button_name": [], "creator": "alina.kay@knowit.no"},
+                "event_button_names": [], "creator": "alina.kay@knowit.no"},
             "755fd38mdr0egjo8i5i6h2lt0l": {
                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                 "timestamp_from": 1575554400, "timestamp_to": 1575561600,
-                "event_summary": "3D-printerkveld", "event_button_name": [],
+                "event_summary": "3D-printerkveld", "event_button_names": [],
                 "creator": "ab@knowit.no"},
             "6bu90333au1rks6sv6370t9qk6": {
                 "calendar_id": "knowit.no_rsgaebrj8ihghga8scoqu5i6c0@group.calendar.google.com",
                 "timestamp_from": 1576076400, "timestamp_to": 1576083600,
-                "event_summary": "Knowit Objectnet Mangekamp: Bowling", "event_button_name": [],
+                "event_summary": "Knowit Objectnet Mangekamp: Bowling", "event_button_names": [],
                 "creator": "aulon.mujaj@knowit.no"},
             "06vllccjqsurk9t7jr695fdnai": {
                 "calendar_id": "knowit.no_rsgaebrj8ihghga8scoqu5i6c0@group.calendar.google.com",
                 "timestamp_from": 1576191600, "timestamp_to": 1576278000,
-                "event_summary": "Julebord", "event_button_name": ['alfa'],
+                "event_summary": "Julebord", "event_button_names": ['alfa'],
                 "creator": "marius.backer@knowit.no"}
         }
 
@@ -149,21 +149,18 @@ class TestInsertEvent:
             def execute_sql_queries_stub(s: insert_event_util.EventQueries):
                 real_list_of_queries = s.get_sql_queries()
                 test_list_of_queries = [
-                    ('INSERT IGNORE INTO EventRatingType (id, event_button_id, calendar_id, timestamp_from,'
-                     ' timestamp_to, event_summary, event_button_name, creator, event_id, event_code) '
-                     'VALUES ("3mbuq0b4pciqef8qghu4ouc715", "NULL", '
-                     '"knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", 1575381600, 1575396000, '
-                     '"Rust kodekveld", "NULL", "thomas.tokje@knowit.no", "3mbuq0b4pciqef8qghu4ouc715", "60732") '
-                     'ON DUPLICATE KEY UPDATE event_button_id="NULL", '
+                    ('INSERT IGNORE INTO EventRatingType (id, event_button_id, event_button_name, '
+                     'calendar_id, timestamp_from, timestamp_to, event_summary, creator, event_id, event_code) '
+                     'VALUES ("3mbuq0b4pciqef8qghu4ouc715", "NULL", "NULL", '
+                     '"knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", '
+                     '1575381600, 1575396000, "Rust kodekveld", "thomas.tokje@knowit.no", '
+                     '"3mbuq0b4pciqef8qghu4ouc715", "41026") ON DUPLICATE KEY UPDATE event_button_id="NULL", '
+                     'event_button_name="NULL", '
                      'calendar_id="knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", '
                      'timestamp_from=1575381600, timestamp_to=1575396000, event_summary="Rust kodekveld", '
-                     'event_button_name="NULL", creator="thomas.tokje@knowit.no", '
-                     'event_id="3mbuq0b4pciqef8qghu4ouc715", event_code="22951";')]
+                     'creator="thomas.tokje@knowit.no", event_id="3mbuq0b4pciqef8qghu4ouc715", event_code="41026";')]
 
                 for (real, test) in zip(real_list_of_queries, test_list_of_queries):
-                    # Test that they are unequal since event code should be different
-                    assert real != test
-
                     # Test that they are equal without event code since this is a random code
                     assert self.remove_occurences_of_event_code_from_query(real) == \
                            self.remove_occurences_of_event_code_from_query(test)
@@ -186,18 +183,19 @@ class TestInsertEvent:
             def execute_sql_queries_stub(s: insert_event_util.EventQueries):
                 real_list_of_queries = s.get_sql_queries()
                 test_list_of_queries = [
-                    'INSERT IGNORE INTO EventRatingType (id, event_button_id, calendar_id, timestamp_from, '
-                    'timestamp_to, event_summary, event_button_name, creator, event_id, event_code) VALUES '
-                    '("3mbuq0b4pciqef8qghu4ouc715", "NULL", '
+                    'INSERT IGNORE INTO EventRatingType (id, event_button_id, event_button_name, '
+                    'calendar_id, timestamp_from, timestamp_to, event_summary, creator, event_id, event_code) '
+                    'VALUES ("3mbuq0b4pciqef8qghu4ouc715", "NULL", "NULL", '
                     '"knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", 1575381600, 1575396000, '
-                    '"Rust kodekveld", "NULL", "thomas.tokje@knowit.no", "3mbuq0b4pciqef8qghu4ouc715", "01096") '
-                    'ON DUPLICATE KEY UPDATE event_button_id="NULL", '
+                    '"Rust kodekveld", "thomas.tokje@knowit.no", "3mbuq0b4pciqef8qghu4ouc715", "01096") '
+                    'ON DUPLICATE KEY UPDATE event_button_id="NULL", event_button_name="NULL", '
                     'calendar_id="knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", '
                     'timestamp_from=1575381600, timestamp_to=1575396000, event_summary="Rust kodekveld", '
-                    'event_button_name="NULL", creator="thomas.tokje@knowit.no", '
-                    'event_id="3mbuq0b4pciqef8qghu4ouc715", event_code="01096";']
+                    'creator="thomas.tokje@knowit.no", event_id="3mbuq0b4pciqef8qghu4ouc715", event_code="01096";']
 
                 for (real, test) in zip(real_list_of_queries, test_list_of_queries):
+                    print(real)
+                    print(test)
                     assert real == test
 
             monkeypatch.setattr(insert_event_util.EventQueries, 'execute_sql_queries', execute_sql_queries_stub)

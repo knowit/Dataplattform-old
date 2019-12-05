@@ -38,27 +38,27 @@ class TestInsertEventUtil:
             "3mbuq0b4pciqef8qghu4ouc715": {
                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                 "timestamp_from": 1575381600, "timestamp_to": 1575396000,
-                "event_summary": "Rust kodekveld", "event_button_name": [],
+                "event_summary": "Rust kodekveld", "event_button_names": [],
                 "creator": "thomas.tokje@knowit.no"},
             "5sp3pome607cff0pktahpve6pc": {
                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                 "timestamp_from": 1575387900, "timestamp_to": 1575391500,
                 "event_summary": "Speech training with Oslo Speaking Club",
-                "event_button_name": [], "creator": "alina.kay@knowit.no"},
+                "event_button_names": [], "creator": "alina.kay@knowit.no"},
             "755fd38mdr0egjo8i5i6h2lt0l": {
                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                 "timestamp_from": 1575554400, "timestamp_to": 1575561600,
-                "event_summary": "3D-printerkveld", "event_button_name": [],
+                "event_summary": "3D-printerkveld", "event_button_names": [],
                 "creator": "ab@knowit.no"},
             "6bu90333au1rks6sv6370t9qk6": {
                 "calendar_id": "knowit.no_rsgaebrj8ihghga8scoqu5i6c0@group.calendar.google.com",
                 "timestamp_from": 1576076400, "timestamp_to": 1576083600,
-                "event_summary": "Knowit Objectnet Mangekamp: Bowling", "event_button_name": [],
+                "event_summary": "Knowit Objectnet Mangekamp: Bowling", "event_button_names": [],
                 "creator": "aulon.mujaj@knowit.no"},
             "06vllccjqsurk9t7jr695fdnai": {
                 "calendar_id": "knowit.no_rsgaebrj8ihghga8scoqu5i6c0@group.calendar.google.com",
                 "timestamp_from": 1576191600, "timestamp_to": 1576278000,
-                "event_summary": "Julebord", "event_button_name": ['alfa'],
+                "event_summary": "Julebord", "event_button_names": ['alfa'],
                 "creator": "marius.backer@knowit.no"}
         }
 
@@ -75,20 +75,20 @@ class TestInsertEventUtil:
         event['event_code'] = '12345'
         event['event_id'] = 'fake_event_id'
         event_queries.append_insert_or_update_queries_from_event(event)
-        assert event_queries.get_sql_queries() == [
-            (f'INSERT IGNORE INTO EventRatingType ('
-             f'id, event_button_id, calendar_id, timestamp_from, timestamp_to, event_summary, event_button_name, '
-             f'creator, event_code, event_id'
-             f') VALUES ('
-             f'"fake_event_id", "NULL", '
-             f'"knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", 1575381600, 1575396000, '
-             f'"Rust kodekveld", "NULL", "thomas.tokje@knowit.no", "12345", "fake_event_id") '
-             f'ON DUPLICATE KEY UPDATE '
-             f'event_button_id="NULL", '
-             f'calendar_id="knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", timestamp_from=1575381600, '
-             f'timestamp_to=1575396000, event_summary="Rust kodekveld", event_button_name="NULL", '
-             f'creator="thomas.tokje@knowit.no", event_code="12345", event_id="fake_event_id";')
+        real = event_queries.get_sql_queries()
+        test = [
+            'INSERT IGNORE INTO EventRatingType (id, event_button_id, event_button_name, calendar_id, '
+            'timestamp_from, timestamp_to, event_summary, creator, event_code, event_id) VALUES ("fake_event_id", '
+            '"NULL", "NULL", "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", 1575381600, 1575396000, '
+            '"Rust kodekveld", "thomas.tokje@knowit.no", "12345", "fake_event_id") '
+            'ON DUPLICATE KEY UPDATE event_button_id="NULL", event_button_name="NULL", '
+            'calendar_id="knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", timestamp_from=1575381600, '
+            'timestamp_to=1575396000, event_summary="Rust kodekveld", creator="thomas.tokje@knowit.no", '
+            'event_code="12345", event_id="fake_event_id";'
         ]
+        print(real)
+        print(test)
+        assert real == test
 
     def test_append_delete_queries_from_event(self, monkeypatch, db_connection, db_events):
         event_queries = EventQueries(db_connection, [])

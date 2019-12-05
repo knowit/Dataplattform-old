@@ -71,8 +71,9 @@ class EventQueries:
         return event_buttons_name_id_mapping
 
     def _parameters_from_event(self, event: Dict[str, any]) -> List[str]:
-        parameters_from_event = ['id', 'event_button_id'] + list(event.keys())
-        return parameters_from_event
+        parameters_from_event = ['id', 'event_button_id', 'event_button_name'] + list(event.keys())
+        parameters_from_event_stripped = [p for p in parameters_from_event if p not in ['event_button_names']]
+        return parameters_from_event_stripped
 
     def _create_insert_queries_for_all_event_boxes(self, parameters: List[str], event: Dict[str, any]) -> List[str]:
         parameters_string = ', '.join(parameters)

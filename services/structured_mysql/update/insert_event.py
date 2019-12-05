@@ -78,6 +78,6 @@ def get_events_from_db_which_are_active_the_next_24_hours(db_connection: pymysql
         db_events = cursor.fetchall()
     except pymysql.err.Error as e:
         print(f"Failed to get saved events: {e}")
-    print("IDS")
+    print("DB events")
     print(db_events)
     return db_events

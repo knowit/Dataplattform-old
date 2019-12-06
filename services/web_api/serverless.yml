@@ -68,22 +68,8 @@ environment:
         - subnet-9a4981e0 # ON-LAN2
 
 functions:
-  get_events:
-    handler: events/get_events.handler
-    events:
-      - http:
-          path: events/*
-          method: get
-    module: web_api
-    name: ${self:custom.web_api_lambda}
-    description: Web API for Dataplattform
-    role: webAPIRole
-    package:
-      include:
-        - 'api_functions/*.py'
-        - 'events/*.py'
-  put_events:
-    handler: events/put_events.handler
+  patch_events:
+    handler: events/patch_events.handler
     events:
       - http:
           path: events/*

@@ -56,10 +56,10 @@ package:
 
 functions:
   get_event_code:
-    handler: api.get_event_code
+    handler: events/api.get_event_code
     events:
       - http:
-          path: event_codes/{id}
+          path: events/event_codes/{id}
           method: get
     module: web_api
     name: ${self:custom.web_api_lambda}

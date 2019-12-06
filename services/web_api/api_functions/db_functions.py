@@ -1,6 +1,7 @@
 import pymysql
 import os
 
+
 def get_db_connection():
     return pymysql.connect(
         host=os.getenv("DATAPLATTFORM_AURORA_HOST"),

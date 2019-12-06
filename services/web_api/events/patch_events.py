@@ -45,10 +45,9 @@ def increment_vote(event_id: str, vote_type: str) -> None:
     cursor = connection.cursor()
     try:
         cursor.execute(sql)
+        connection.commit()
     except pymysql.Error as e:
         print(f"Error: {e}")
-
-    connection.commit()
 
 
 def is_vote_type_valid(vote_type: str) -> bool:
@@ -61,8 +60,8 @@ def get_event_id_from_event_code(event_code: str) -> Union[str, None]:
     cursor = connection.cursor()
     try:
         cursor.execute(sql)
+        result = cursor.fetchone()
+        return result['id']
     except Exception as e:
         print(f'Error: {e}')
-
-    result = cursor.fetchone()
-    return result['id'] if result else None
+        return None

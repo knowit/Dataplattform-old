@@ -1,12 +1,12 @@
-import os
-import pymysql
-import json
-from insert_event_util import EventQueries
+from insert_event_util import EventQueries, \
+    get_db_connection, get_events_from_db_which_are_active_the_next_24_hours, get_google_events
 from typing import Dict, Union, List
+
+db_connection = get_db_connection()
 
 
 def handler(event: Dict, context) -> Dict[str, Union[str, int]]:
-    db_connection = get_db_connection()
+    global db_connection
 
     google_events = get_google_events(event)
     db_events = get_events_from_db_which_are_active_the_next_24_hours(db_connection)
@@ -42,42 +42,3 @@ def handler(event: Dict, context) -> Dict[str, Union[str, int]]:
         'statusCode': 200,
         'body': 'Done'
     }
-
-
-def get_db_connection() -> pymysql.Connection:
-    return pymysql.connect(
-        host=os.getenv("DATAPLATTFORM_AURORA_HOST"),
-        port=int(str(os.getenv("DATAPLATTFORM_AURORA_PORT"))),
-        user=os.getenv("DATAPLATTFORM_AURORA_USER"),
-        password=os.getenv("DATAPLATTFORM_AURORA_PASSWORD"),
-        db=os.getenv("DATAPLATTFORM_AURORA_DB_NAME"),
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor)
-
-
-def get_google_events(event: Dict[str, any]) -> Dict[str, Union[str, int]]:
-    google_events = {}
-    for records in event['Records']:
-        google_event = json.loads(records['Sns']['Message'])['data']
-        google_events.update(google_event)
-
-    return google_events
-
-
-def get_events_from_db_which_are_active_the_next_24_hours(db_connection: pymysql.Connection) -> List[Dict[str, any]]:
-    getSavedEventsSql = "SELECT id, event_id, event_button_id, event_code " \
-                        "FROM EventRatingType " \
-                        "WHERE ( timestamp_from < unix_timestamp() + 60*60*24 " \
-                        "OR timestamp_to < unix_timestamp() + 60*60*24) " \
-                        "AND (timestamp_from > unix_timestamp() " \
-                        "OR timestamp_to > unix_timestamp());"
-    cursor = db_connection.cursor()
-    db_events: List[Dict[str, any]] = []
-    try:
-        cursor.execute(getSavedEventsSql)
-        db_events = cursor.fetchall()
-    except pymysql.err.Error as e:
-        print(f"Failed to get saved events: {e}")
-    print("DB events")
-    print(db_events)
-    return db_events

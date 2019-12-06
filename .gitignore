@@ -118,3 +118,6 @@ venv.bak/
 
 #OS files
 .DS_Store
+
+#Certificates
+*.pem

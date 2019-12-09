@@ -223,7 +223,16 @@ class TestInsertEvent:
 
             def execute_sql_queries_stub(s):
                 real = s.get_sql_queries()
-                test = ["DELETE FROM EventRatingType WHERE id = '3mbuq0b4pciqef8qghu4ouc71512345';"]
+                test = ["DELETE FROM EventRatingType WHERE id = '3mbuq0b4pciqef8qghu4ouc71512345';",
+                        'INSERT IGNORE INTO EventRatingType (id, event_button_id, event_button_name, calendar_id, '
+                        'timestamp_from, timestamp_to, event_summary, creator, event_id, event_code) '
+                        'VALUES ("3mbuq0b4pciqef8qghu4ouc715", 0, "NULL", '
+                        '"knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", 1575381600, 1575396000, '
+                        '"Rust kodekveld", "thomas.tokje@knowit.no", "3mbuq0b4pciqef8qghu4ouc715", "01096") '
+                        'ON DUPLICATE KEY UPDATE event_button_id=0, event_button_name="NULL", '
+                        'calendar_id="knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", '
+                        'timestamp_from=1575381600, timestamp_to=1575396000, event_summary="Rust kodekveld", '
+                        'creator="thomas.tokje@knowit.no", event_id="3mbuq0b4pciqef8qghu4ouc715", event_code="01096";']
                 assert real == test
 
             monkeypatch.setattr(insert_event, 'get_google_events', (lambda _: google_events_to_test))

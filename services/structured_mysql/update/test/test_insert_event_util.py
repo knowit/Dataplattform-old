@@ -165,11 +165,11 @@ class TestInsertEventUtil:
         google_event = google_events["3mbuq0b4pciqef8qghu4ouc715"]
         google_event['event_button_names'] = ['alfa']
 
-        real = EventQueries.is_event_button_still_in_google_event(db_event_with_button_name, google_event)
+        real = EventQueries.is_event_button_assigned_google_event(db_event_with_button_name, google_event)
         test = True
         assert real == test
 
         db_event_with_button_name['event_button_name'] = 'beta'
-        real = EventQueries.is_event_button_still_in_google_event(db_event, google_event)
+        real = EventQueries.is_event_button_assigned_google_event(db_event, google_event)
         test = False
         assert real == test

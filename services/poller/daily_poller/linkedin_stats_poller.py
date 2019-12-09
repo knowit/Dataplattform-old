@@ -39,6 +39,9 @@ DATA_TYPES = {
     "totalShareStatistics": "LinkedInTotalShareStatisticsType"
 }
 
+DATETIME_FORMAT = "%Y-%m-%d"
+DOC_TYPE = "LinkedInLifetimeStatsType"
+
 
 def authenticate():
 
@@ -55,6 +58,14 @@ def authenticate():
 
 
 def poll():
+    date_now = datetime.now().date()
+
+    last_inserted_doc = PollerUtil.fetch_last_inserted_doc(DOC_TYPE)
+    if last_inserted_doc:
+        last_inserted_date = datetime.strptime(str(last_inserted_doc), DATETIME_FORMAT).date()
+        if not last_inserted_date < date_now:
+            return False
+
     client = authenticate()
 
     for key in LINKEDIN_ORGS.keys():
@@ -63,6 +74,9 @@ def poll():
         for data_point in data_points:
             for data_point_key in data_point.keys():
                 PollerUtil.post_to_ingest_api(data_point[data_point_key], data_point_key)
+
+    PollerUtil.upload_last_inserted_doc(str(date_now), DOC_TYPE)
+    return True
 
 
 def poll_stats_data(client, organization_id, organization_name):

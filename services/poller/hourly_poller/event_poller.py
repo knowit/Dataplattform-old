@@ -1,19 +1,14 @@
 import datetime
-import os
 import googleapiclient.discovery
-import json
-import urllib.request
-import urllib.parse
 import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
 import boto3
+import os
+import json
 
 
 def poll():
-    creds_file = 'creds.json'
-    if not os.path.exists(creds_file):
-        print("No creds file")
-
+    credsentials_from_env = os.getenv('DATAPLATTFORM_GOOGLE_CALENDAR_CREDENTIALS')
     calendar_ids = os.getenv("DATAPLATTFORM_GOOGLE_CALENDAR_IDS").split(',')
 
     events = {
@@ -21,14 +16,16 @@ def poll():
     }
 
     for calendar_id in calendar_ids:
-        events['data'].update(get_events(creds_file, calendar_id))
+        events['data'].update(get_events(credsentials_from_env, calendar_id))
 
     url = os.getenv("DATAPLATTFORM_INSERT_URL")
     insert_key = os.getenv("DATAPLATTFORM_INSERT_APIKEY")
     data = json.dumps(events)
 
-    sns = boto3.client('sns')
+    print("Payload:")
+    print(data)
 
+    sns = boto3.client('sns')
     response = sns.publish(
         TopicArn=os.getenv("DATAPLATTFORM_PUBLISH_EVENT"),
         Message=data
@@ -40,19 +37,20 @@ def poll():
     return True
 
 
-def get_events(credsfile, calendar_id):
+def get_events(credsentials_from_env, calendar_id):
     """
     :param creds: credentials
     :param calendar_id:
     :return: A dictionary containing (max 10) of the events in the nearest future from this
     specific calendar_id.
     """
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(credsfile, [
+    credsentials_json = json.loads(credsentials_from_env)
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(credsentials_json, [
         'https://www.googleapis.com/auth/calendar.readonly'])
 
     http = httplib2.Http()
     http = credentials.authorize(http)
-    service = googleapiclient.discovery.build(serviceName='calendar', version='v3', http=http)
+    service = googleapiclient.discovery.build(serviceName='calendar', version='v3', http=http, cache_discovery=False)
     now = datetime.datetime.utcnow().isoformat() + '+02:00'
     tomorrow = datetime.datetime.utcfromtimestamp(datetime.datetime.now().timestamp()
                                                   + (60 * 60 * 24)).isoformat() + '+02:00'
@@ -100,7 +98,7 @@ def get_events(credsfile, calendar_id):
             'timestamp_from': startTime,
             'timestamp_to': endTime,
             'event_summary': summary,
-            'event_button_name': boxes,
+            'event_button_names': boxes,
             'creator': creator,
         }
     return info

@@ -53,7 +53,7 @@ class EventQueries:
         self._event_button_name_id_mapping = self._get_event_button_name_id_mapping()
 
     @staticmethod
-    def is_event_button_still_in_google_event(db_event, google_event):
+    def is_event_button_assigned_google_event(db_event, google_event):
         return db_event['event_button_name'] in google_event['event_button_names']
 
     @staticmethod

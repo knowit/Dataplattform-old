@@ -107,16 +107,16 @@ class EventQueries:
     def _get_event_button_name_id_mapping(self) -> Dict[str, str]:
         cursor = self._db_connection.cursor()
         get_event_buttons_sql = "SELECT event_button_id, event_button_name FROM EventBoxes;"
+
         try:
             cursor.execute(get_event_buttons_sql)
+            event_buttons = cursor.fetchall()
+
+            event_buttons_name_id_mapping = \
+                {event_button['event_button_name']: event_button['event_button_id'] for event_button in event_buttons}
+            return event_buttons_name_id_mapping
         except pymysql.err.Error as e:
             print(f"Something went wrong with: {str(get_event_buttons_sql)}. Error: {e}")
-
-        event_buttons = cursor.fetchall()
-
-        event_buttons_name_id_mapping = \
-            {event_button['event_button_name']: event_button['event_button_id'] for event_button in event_buttons}
-        return event_buttons_name_id_mapping
 
     def _parameters_from_event(self, event: Dict[str, any]) -> List[str]:
         parameters_from_event = ['id', 'event_button_id', 'event_button_name'] + list(event.keys())

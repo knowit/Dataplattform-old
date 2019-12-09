@@ -41,8 +41,10 @@ def handler(event: Dict, context) -> Dict[str, Union[str, int]]:
 
     # Execute sql queries so that db is in sync with google calendar
     queries.execute_sql_queries()
+    for q in queries.get_sql_queries():
+        print(q)
     db_connection.commit()
-    db_connection.close()
+    # db_connection.close()
 
     return {
         'statusCode': 200,

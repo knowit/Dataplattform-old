@@ -38,6 +38,9 @@ DEFAULT_TYPES = [
     "LinkedInFollowerCountsByFunctionType",
     "LinkedInFollowerCountsByCountryType",
     "LinkedInTotalShareStatisticsType",
+    "LinkedInDailyFollowerStatsType",
+    "LinkedInDailyShareStatsType",
+    "LinkedInDailyPageStatsType",
 ]
 
 # Assume running hourly by default. Request the last 1h10m of data.

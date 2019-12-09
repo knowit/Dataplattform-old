@@ -31,7 +31,7 @@ custom:
 
 provider:
   name: aws
-  stage: prod
+  stage: test
   region: eu-central-1
   deploymentBucket:
     name: dataplattform-deploymentbucket

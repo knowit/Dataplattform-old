@@ -1,50 +1,15 @@
-import os
-import pymysql
 import json
-from typing import Dict, Union, List
 import pytest
 import insert_event
 import insert_event_util
+from copy import deepcopy
 import re
 
 
 class TestInsertEvent:
     @pytest.fixture
-    def db_events(self):
-        db_events = [
-            {'id': '3mbuq0b4pciqef8qghu4ouc715', 'event_id': '3mbuq0b4pciqef8qghu4ouc715', 'event_button_id': 0,
-             'event_code': '01096'},
-            {'id': '5sp3pome607cff0pktahpve6pc', 'event_id': '5sp3pome607cff0pktahpve6pc', 'event_button_id': 0,
-             'event_code': '07653'}]
-        return db_events
-
-    @pytest.fixture
-    def db_connection(self):
-        class DBConnectionMock:
-            def connect(self, **kvarg):
-                pass
-
-            def commit(self):
-                pass
-
-            def close(self):
-                pass
-
-            def cursor(self):
-                class DBCursorMock:
-                    def execute(self, query):
-                        pass
-
-                    def fetchall(self):
-                        return []
-
-                return DBCursorMock()
-
-        return DBConnectionMock()
-
-    @pytest.fixture
     def event(self):
-        event = {
+        return {
             "Records": [{
                 "Sns": {
                     "Message": json.dumps({
@@ -81,11 +46,41 @@ class TestInsertEvent:
             ]
         }
 
-        return event
+    @pytest.fixture
+    def db_events(self):
+        return [
+            {'id': '3mbuq0b4pciqef8qghu4ouc715', 'event_id': '3mbuq0b4pciqef8qghu4ouc715', 'event_button_id': 0,
+             'event_button_name': 'NULL', 'event_code': '01096'},
+            {'id': '5sp3pome607cff0pktahpve6pc', 'event_id': '5sp3pome607cff0pktahpve6pc', 'event_button_id': 0,
+             'event_button_name': 'NULL', 'event_code': '07653'}]
+
+    @pytest.fixture
+    def db_connection(self):
+        class DBConnectionMock:
+            def connect(self, **kvarg):
+                pass
+
+            def commit(self):
+                pass
+
+            def close(self):
+                pass
+
+            def cursor(self):
+                class DBCursorMock:
+                    def execute(self, query):
+                        pass
+
+                    def fetchall(self):
+                        return []
+
+                return DBCursorMock()
+
+        return DBConnectionMock()
 
     @pytest.fixture
     def google_events(self):
-        google_events = {
+        return {
             "3mbuq0b4pciqef8qghu4ouc715": {
                 "calendar_id": "knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com",
                 "timestamp_from": 1575381600, "timestamp_to": 1575396000,
@@ -113,8 +108,6 @@ class TestInsertEvent:
                 "creator": "marius.backer@knowit.no"}
         }
 
-        return google_events
-
     @pytest.fixture
     def event_boxes_mapping(self):
         event_buttons = [{'event_button_id': 19625, 'event_button_name': 'alfa'},
@@ -123,9 +116,6 @@ class TestInsertEvent:
         event_buttons_name_id_mapping = \
             {event_button['event_button_name']: event_button['event_button_id'] for event_button in event_buttons}
         return event_buttons_name_id_mapping
-
-    def test_get_google_events(self, event, google_events):
-        assert google_events == insert_event.get_google_events(event)
 
     class TestHandler:
 
@@ -140,10 +130,10 @@ class TestInsertEvent:
             string = re.sub(r'"[0-9]{5}"\) ON DUPLICATE KEY UPDATE', '"") ON DUPLICATE KEY UPDATE', string)
             return string
 
-        def test_insert_of_google_event(self, monkeypatch, google_events, event, event_boxes_mapping):
+        def test_insert_of_google_event(self, monkeypatch, google_events, event, event_boxes_mapping, db_connection):
             one_google_event = {"3mbuq0b4pciqef8qghu4ouc715": google_events["3mbuq0b4pciqef8qghu4ouc715"]}
-            monkeypatch.setattr(insert_event, 'get_google_events', (lambda _: one_google_event))
-            monkeypatch.setattr(insert_event, 'get_events_from_db_which_are_active_the_next_24_hours',
+            monkeypatch.setattr(insert_event_util, 'get_google_events', (lambda _: one_google_event))
+            monkeypatch.setattr(insert_event_util, 'get_events_from_db_which_are_active_the_next_24_hours',
                                 (lambda e: []))
 
             def execute_sql_queries_stub(s: insert_event_util.EventQueries):
@@ -151,10 +141,10 @@ class TestInsertEvent:
                 test_list_of_queries = [
                     ('INSERT IGNORE INTO EventRatingType (id, event_button_id, event_button_name, '
                      'calendar_id, timestamp_from, timestamp_to, event_summary, creator, event_id, event_code) '
-                     'VALUES ("3mbuq0b4pciqef8qghu4ouc715", "NULL", "NULL", '
+                     'VALUES ("3mbuq0b4pciqef8qghu4ouc715", 0, "NULL", '
                      '"knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", '
                      '1575381600, 1575396000, "Rust kodekveld", "thomas.tokje@knowit.no", '
-                     '"3mbuq0b4pciqef8qghu4ouc715", "41026") ON DUPLICATE KEY UPDATE event_button_id="NULL", '
+                     '"3mbuq0b4pciqef8qghu4ouc715", "41026") ON DUPLICATE KEY UPDATE event_button_id=0, '
                      'event_button_name="NULL", '
                      'calendar_id="knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", '
                      'timestamp_from=1575381600, timestamp_to=1575396000, event_summary="Rust kodekveld", '
@@ -185,10 +175,10 @@ class TestInsertEvent:
                 test_list_of_queries = [
                     'INSERT IGNORE INTO EventRatingType (id, event_button_id, event_button_name, '
                     'calendar_id, timestamp_from, timestamp_to, event_summary, creator, event_id, event_code) '
-                    'VALUES ("3mbuq0b4pciqef8qghu4ouc715", "NULL", "NULL", '
+                    'VALUES ("3mbuq0b4pciqef8qghu4ouc715", 0, "NULL", '
                     '"knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", 1575381600, 1575396000, '
                     '"Rust kodekveld", "thomas.tokje@knowit.no", "3mbuq0b4pciqef8qghu4ouc715", "01096") '
-                    'ON DUPLICATE KEY UPDATE event_button_id="NULL", event_button_name="NULL", '
+                    'ON DUPLICATE KEY UPDATE event_button_id=0, event_button_name="NULL", '
                     'calendar_id="knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", '
                     'timestamp_from=1575381600, timestamp_to=1575396000, event_summary="Rust kodekveld", '
                     'creator="thomas.tokje@knowit.no", event_id="3mbuq0b4pciqef8qghu4ouc715", event_code="01096";']
@@ -215,4 +205,39 @@ class TestInsertEvent:
                     assert real == test
 
             monkeypatch.setattr(insert_event_util.EventQueries, 'execute_sql_queries', execute_sql_queries_stub)
+            insert_event.handler(event, {})
+
+        def test_delete_from_db_if_event_has_button_name_which_no_longer_exists_on_google_event(self, monkeypatch,
+                                                                                                event, db_events,
+                                                                                                google_events):
+            db_event = db_events[0]
+            db_event_with_button_name = deepcopy(db_event)
+            db_event_with_button_name['event_button_name'] = 'alfa'
+            db_event_with_button_name['event_button_id'] = '12345'
+            db_event_with_button_name['id'] = db_event_with_button_name['id'] + db_event_with_button_name[
+                'event_button_id']
+
+            db_events_to_test = [db_event, db_event_with_button_name]
+
+            google_events_to_test = {"3mbuq0b4pciqef8qghu4ouc715": google_events["3mbuq0b4pciqef8qghu4ouc715"]}
+
+            def execute_sql_queries_stub(s):
+                real = s.get_sql_queries()
+                test = ["DELETE FROM EventRatingType WHERE id = '3mbuq0b4pciqef8qghu4ouc71512345';",
+                        'INSERT IGNORE INTO EventRatingType (id, event_button_id, event_button_name, calendar_id, '
+                        'timestamp_from, timestamp_to, event_summary, creator, event_id, event_code) '
+                        'VALUES ("3mbuq0b4pciqef8qghu4ouc715", 0, "NULL", '
+                        '"knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", 1575381600, 1575396000, '
+                        '"Rust kodekveld", "thomas.tokje@knowit.no", "3mbuq0b4pciqef8qghu4ouc715", "01096") '
+                        'ON DUPLICATE KEY UPDATE event_button_id=0, event_button_name="NULL", '
+                        'calendar_id="knowit.no_63rtu1seerufqsdhc4avduoggk@group.calendar.google.com", '
+                        'timestamp_from=1575381600, timestamp_to=1575396000, event_summary="Rust kodekveld", '
+                        'creator="thomas.tokje@knowit.no", event_id="3mbuq0b4pciqef8qghu4ouc715", event_code="01096";']
+                assert real == test
+
+            monkeypatch.setattr(insert_event, 'get_google_events', (lambda _: google_events_to_test))
+            monkeypatch.setattr(insert_event, 'get_events_from_db_which_are_active_the_next_24_hours',
+                                (lambda e: db_events_to_test))
+            monkeypatch.setattr(insert_event_util.EventQueries, 'execute_sql_queries', execute_sql_queries_stub)
+
             insert_event.handler(event, {})

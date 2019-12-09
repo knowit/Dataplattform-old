@@ -73,7 +73,7 @@ functions:
     events:
       - http:
           path: events/*
-          method: put
+          method: patch
     module: web_api
     name: ${self:custom.web_api_lambda}
     description: Web API for Dataplattform

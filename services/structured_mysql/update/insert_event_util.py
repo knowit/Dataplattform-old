@@ -16,7 +16,7 @@ def get_db_connection() -> pymysql.Connection:
         cursorclass=pymysql.cursors.DictCursor)
 
 
-def get_google_events(event: Dict[str, any]) -> Dict[str, Union[str, int]]:
+def get_google_events(event: Dict[str, any]) -> Dict[str, any]:
     google_events = {}
     for records in event['Records']:
         google_event = json.loads(records['Sns']['Message'])['data']
@@ -26,7 +26,7 @@ def get_google_events(event: Dict[str, any]) -> Dict[str, Union[str, int]]:
 
 
 def get_events_from_db_which_are_active_the_next_24_hours(db_connection: pymysql.Connection) -> List[Dict[str, any]]:
-    getSavedEventsSql = "SELECT id, event_id, event_button_id, event_code " \
+    getSavedEventsSql = "SELECT id, event_id, event_button_id, event_button_name, event_code " \
                         "FROM EventRatingType " \
                         "WHERE ( timestamp_from < unix_timestamp() + 60*60*24 " \
                         "OR timestamp_to < unix_timestamp() + 60*60*24) " \
@@ -39,8 +39,6 @@ def get_events_from_db_which_are_active_the_next_24_hours(db_connection: pymysql
         db_events = cursor.fetchall()
     except pymysql.err.Error as e:
         print(f"Failed to get saved events: {e}")
-    print("DB events")
-    print(db_events)
     return db_events
 
 
@@ -53,6 +51,10 @@ class EventQueries:
         self._new_event_codes_not_yet_committed = []
         self._event_codes_in_db = self._get_event_codes_in_db(db_events)
         self._event_button_name_id_mapping = self._get_event_button_name_id_mapping()
+
+    @staticmethod
+    def is_event_button_still_in_google_event(db_event, google_event):
+        return db_event['event_button_name'] in google_event['event_button_names']
 
     @staticmethod
     def json_stringify(element: str) -> json.JSONEncoder:
@@ -72,6 +74,12 @@ class EventQueries:
             delete_sql = f"DELETE FROM EventRatingType WHERE event_id = '{event_id}';"
             self._sql_queries.append(delete_sql)
             self._event_ids_to_be_deleted.append(event_id)
+
+    def append_single_delete_query_from_event(self, event: Dict[str, any]) -> None:
+        event_id = event['id']
+        delete_sql = f"DELETE FROM EventRatingType WHERE id = '{event_id}';"
+        self._sql_queries.append(delete_sql)
+        self._event_ids_to_be_deleted.append(event_id)
 
     def execute_sql_queries(self) -> None:
         for insert_sql in self._sql_queries:

@@ -115,3 +115,9 @@ venv.bak/
 **/package-lock.json
 **/*.serverless_outputs*.json
 **/temp/
+
+#OS files
+.DS_Store
+
+#Certificates
+*.pem

@@ -60,7 +60,7 @@ def poll():
                                                 org_name, LINKEDIN_APIS[api_type],
                                                 last_inserted_timestamp)
             if not data_points:
-                continue
+                break
 
             for data_point in data_points:
                 result = PollerUtil.post_to_ingest_api(data_point, api_type)
@@ -74,7 +74,7 @@ def poll():
 
 def poll_daily_stats_data(client, organization_id, organization_name, api, last_inserted_timestamp):
     data_points = []
-    curr_time = datetime.now()
+    curr_time = datetime.now() - timedelta(days=2)
     if last_inserted_timestamp == 0:
         last_inserted_timestamp = (curr_time - timedelta(days=365)).timestamp()
 

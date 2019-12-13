@@ -6,6 +6,7 @@ custom:
   daily_poller_lambda: ${self:custom.project}-daily_poller
   hourly_poller_lambda: ${self:custom.project}-hourly_poller
   ad_poller_lambda: ${self:custom.project}-ad_poller
+  jira_poller_lambda: ${self:custom.project}-jira_poller
   pollingStatusTable: ${self:custom.project}-polling_status
   ingest_apikey: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
   insert_apikey: ${ssm:dataplattform_${self:custom.stage}_insert_event_apikey}
@@ -111,6 +112,31 @@ functions:
         - subnet-bd8400d5 # ON-LAN1
         - subnet-9a4981e0 # ON-LAN2
 
+  jira_poller:
+    handler: jira_poller.handler
+    module: jira_poller
+    name: ${self:custom.jira_poller_lambda}
+    description: jira_poller Lambda
+    role: jiraPollerRole
+    package:
+      include:
+        - 'jira_poller/*.py'
+    environment:
+      DATAPLATTFORM_INGEST_APIKEY: ${self:custom.ingest_apikey}
+      DATAPLATTFORM_INGEST_URL:
+        'Fn::ImportValue': ${self:custom.project}-ingest-url
+      DATAPLATTFORM_JIRA_SALES_URL: ${ssm:dataplattform_jira_sales_url}
+      DATAPLATTFORM_JIRA_SALES_USERNAME: ${ssm:dataplattform_jira_sales_username}
+      DATAPLATTFORM_JIRA_SALES_PASSWORD: ${ssm:dataplattform_jira_sales_password}
+      DATAPLATTFORM_POLLING_STATUS_TABLENAME: ${self:custom.pollingStatusTable}
+    events:
+      - schedule: rate(1 day)
+    vpc:
+      securityGroupIds:
+        - sg-2ca58644 # ON-LAN
+      subnetIds:
+        - subnet-bd8400d5 # ON-LAN1
+        - subnet-9a4981e0 # ON-LAN2
 
 resources:
   Resources:
@@ -141,8 +167,8 @@ resources:
                     - "dynamodb:Query"
                   Resource:
                     - Fn::GetAtt:
-                      - PollingStatusTable
-                      - Arn
+                        - PollingStatusTable
+                        - Arn
 
     hourlyPollerRole:
       Type: AWS::IAM::Role
@@ -184,6 +210,35 @@ resources:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
 
+    jiraPollerRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-JiraPollerRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        Policies:
+          - PolicyName: ${self:custom.project}-dynamodbReadOnlyPolicyJira
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:PutItem"
+                    - "dynamodb:GetItem"
+                    - "dynamodb:Scan"
+                    - "dynamodb:Query"
+                  Resource:
+                    - Fn::GetAtt:
+                        - PollingStatusTable
+                        - Arn
 
     PollingStatusTable:
       Type: AWS::DynamoDB::Table

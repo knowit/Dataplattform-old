@@ -17,28 +17,82 @@ provider:
 
 resources:
   Resources:
+    UserPoolIdentityProvider:
+      Type: AWS::Cognito::UserPoolIdentityProvider
+      Properties:
+        AttributeMapping:
+          email: email
+          name: name
+          given_name: given_name
+          family_name: family_name
+        ProviderDetails:
+          client_id: ${ssm:GOOGLE_CLIENT_ID}
+          client_secret: ${ssm:GOOGLE_CLIENT_SECRET}
+          authorize_scopes: profile email openid
+        ProviderName: Google
+        ProviderType: Google
+        UserPoolId: !Ref CognitoUserPool
+
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
-        # Generate a name based on the stage
         UserPoolName: ${self:custom.stage}-user-pool
-        # Set email as an alias
         UsernameAttributes:
           - email
         AutoVerifiedAttributes:
           - email
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: True
+
 
     CognitoUserPoolClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
-        # Generate an app client name based on the stage
+        AllowedOAuthFlows: 
+          - code
+          - implicit
+        AllowedOAuthFlowsUserPoolClient: True
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+          - dataplattform-cognito/level_0
+          - dataplattform-cognito/level_1
+          - dataplattform-cognito/level_2
+          - dataplattform-cognito/level_3
         ClientName: ${self:custom.stage}-user-pool-client
-        UserPoolId:
-          Ref: CognitoUserPool
-        ExplicitAuthFlows:
-          - ADMIN_NO_SRP_AUTH
+        CallbackURLs: 
+          - http://localhost:8080/callback/signin
+          - http://localhost:8080/callback/signin/silent
         GenerateSecret: false
-
+        LogoutURLs:
+          - http://localhost:8080/admin/signin
+        SupportedIdentityProviders: 
+          - Google
+        UserPoolId: !Ref CognitoUserPool
+    
+    UserPoolDomain: 
+      Type: AWS::Cognito::UserPoolDomain 
+      Properties:
+        UserPoolId: !Ref CognitoUserPool 
+        Domain: "dataplattform-test"
+    
+    UserPoolResourceServer:
+      Type: AWS::Cognito::UserPoolResourceServer
+      Properties: 
+        Identifier: ${self:service}
+        Name: scope-${self:service}
+        Scopes: 
+          - ScopeName: "level_0"
+            ScopeDescription: "Open endpoint"
+          - ScopeName: "level_1"
+            ScopeDescription: "For Knowit employees"
+          - ScopeName: "level_2"
+            ScopeDescription: "For Knowit-Objectnet employees"
+          - ScopeName: "level_3"
+            ScopeDescription: "For Avdelingledere"
+        UserPoolId: !Ref CognitoUserPool
+  
 Outputs:
   UserPoolId:
     Value:

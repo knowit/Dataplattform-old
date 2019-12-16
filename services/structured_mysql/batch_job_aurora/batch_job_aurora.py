@@ -42,6 +42,7 @@ DEFAULT_TYPES = [
     "LinkedInDailyShareStatsType",
     "LinkedInDailyPageStatsType",
     "SnappySenseType",
+    "JiraSalesType",
 ]
 
 # Assume running hourly by default. Request the last 1h10m of data.
@@ -66,7 +67,7 @@ def handler(event, context):
     return {
         'statusCode': 200,
         'body': f"{counter} records inserted into Aurora. {n_dupes} duplicates skipped. "
-        f"{n_errors} errors."
+                f"{n_errors} errors."
     }
 
 

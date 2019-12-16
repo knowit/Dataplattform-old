@@ -41,8 +41,11 @@ def get_sales_data_from_jira(
 def strip_data(data: list) -> list:
     stripped = []
     for item in data['issues']:
+        customer = ''
+        if len(item['fields']['labels']) > 0:
+            customer = item['fields']['labels'][0]
         issue = {'timestamp': item['fields']['created'],
-                 'customer': item['fields']['labels'],
+                 'customer': customer,
                  'status': item['fields']['status']['name']}
         stripped.append(issue)
     return stripped

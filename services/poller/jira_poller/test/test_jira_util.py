@@ -29,7 +29,16 @@ class JiraUtilTestCase(unittest.TestCase):
                 {
                     "fields": {
                         'created': 'a date',
-                        'labels': 'a customer',
+                        'labels': ['a customer'],
+                        'status': {
+                            'name': 'accepted'
+                        }
+                    }
+                },
+                {
+                    "fields": {
+                        'created': 'a date',
+                        'labels': [],
                         'status': {
                             'name': 'accepted'
                         }
@@ -42,6 +51,11 @@ class JiraUtilTestCase(unittest.TestCase):
             {
                 'timestamp': 'a date',
                 'customer': 'a customer',
+                'status': 'accepted'
+            },
+            {
+                'timestamp': 'a date',
+                'customer': '',
                 'status': 'accepted'
             }
         ]

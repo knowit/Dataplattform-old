@@ -10,9 +10,7 @@ from poller_util import PollerUtil
 load_dotenv(dotenv_path='.env')
 
 BITBUCKET_TYPE = "BitbucketType"
-INGEST_URL = os.getenv("DATAPLATTFORM_INGEST_URL")
-INGEST_API_KEY = os.getenv("DATAPLATTFORM_INGEST_APIKEY")
-BASE_URL = os.getenv("BITBUCKET_API_URL")
+BITBUCKET_API_URL = "https://kode.knowit.no/rest/api/1.0"
 
 
 def create_project_data(project):
@@ -37,7 +35,8 @@ def get(path, query_params=None):
     :return: the response from the request
     """
     try:
-        response = requests.get(f'{BASE_URL}/{path}', params=query_params)
+        response = requests.get(
+            f'{BITBUCKET_API_URL}/{path}', params=query_params)
         response.raise_for_status()
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
@@ -72,6 +71,9 @@ def get_all_pages(url, params=None):
 
 
 def get_projects():
+    """
+    Get all bitbucket projects
+    """
     response = get_all_pages("projects")
 
     projects = []
@@ -110,11 +112,17 @@ def get_commits(repo):
 
 
 def get_branches(repo):
+    """
+    get all branches for a repository
+    """
     url = f"{get_repo_url(repo)}/branches"
     return get_all_pages(url)
 
 
 def get_pull_requests(repo):
+    """
+    get all pull requests for a repository
+    """
     url = f"{get_repo_url(repo)}/pull-requests"
     return get_all_pages(url)
 
@@ -155,11 +163,8 @@ def poll():
     """
     repos = get_repos()
     for repo in repos:
-        print("getting commits for", repo["slug"])
         repo_commits = get_commits(repo)
-        print("got commits for", repo["slug"])
         post_commits(repo_commits, repo)
-        print("got commits for", repo["slug"])
 
 
 def post_commits(commits, repo):
@@ -181,4 +186,5 @@ def main():
     poll()
 
 
-main()
+if __name__ == '__main__':
+    main()

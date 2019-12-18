@@ -107,6 +107,13 @@ def get_commits(repo):
         del commit["committer"]
         del commit["author"]
         commit["repo"] = repo
+
+    for commit in commits:
+        print(commit["committerTimestamp"])
+
+    # Make sure commits are in order with olderst first and newest last
+    commits = sorted(commits, key=lambda it: it["committerTimestamp"])
+
     return commits
 
 
@@ -172,17 +179,15 @@ def post_commits(commits, repo):
     :param commits: A list of commits to post into ingest
     :param repo: the repo which the commits are associated with
     """
+    last_inserted_id = None
     for commit in commits:
-        PollerUtil.post_to_ingest_api(type=BITBUCKET_TYPE, data=commit)
+        result = PollerUtil.post_to_ingest_api(
+            type=BITBUCKET_TYPE, data=commit)
+        if result is 200:
+            print(result)
+            last_inserted_id = commit["id"]
 
-    if commits:
+    if last_inserted_id is not None:
+        last_inserted_name = BITBUCKET_TYPE + repo["slug"]
         PollerUtil.upload_last_inserted_doc(
-            last_inserted_doc=commits[0]["id"], type=BITBUCKET_TYPE + repo["slug"])
-
-
-def main():
-    poll()
-
-
-if __name__ == '__main__':
-    main()
+            last_inserted_doc=last_inserted_id, type=last_inserted_name)

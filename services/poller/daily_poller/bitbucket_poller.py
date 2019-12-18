@@ -1,7 +1,6 @@
 import os
 import requests
 from requests.exceptions import HTTPError
-import pprint
 import json
 
 from dotenv import load_dotenv
@@ -174,7 +173,6 @@ def post_commits(commits, repo):
     :param repo: the repo which the commits are associated with
     """
     for commit in commits:
-        print("post", commit["id"])
         PollerUtil.post_to_ingest_api(type=BITBUCKET_TYPE, data=commit)
 
     if commits:

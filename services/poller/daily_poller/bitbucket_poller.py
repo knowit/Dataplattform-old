@@ -109,9 +109,8 @@ def get_commits(repo):
         commit["repo"] = repo
 
     for commit in commits:
-        print(commit["committerTimestamp"])
 
-    # Make sure commits are in order with olderst first and newest last
+        # Make sure commits are in order with olderst first and newest last
     commits = sorted(commits, key=lambda it: it["committerTimestamp"])
 
     return commits
@@ -184,7 +183,6 @@ def post_commits(commits, repo):
         result = PollerUtil.post_to_ingest_api(
             type=BITBUCKET_TYPE, data=commit)
         if result is 200:
-            print(result)
             last_inserted_id = commit["id"]
 
     if last_inserted_id is not None:

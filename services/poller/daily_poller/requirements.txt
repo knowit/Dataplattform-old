@@ -4,3 +4,4 @@ soupsieve==1.9.2
 tweepy==3.8.0
 requests-oauthlib==1.3.0
 requests==2.22.0
+python-dotenv==0.10.3

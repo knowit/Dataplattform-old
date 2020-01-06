@@ -6,42 +6,43 @@ import pymysql
 from datetime import datetime as dt
 
 """
-This lambda gets raw data from the get_docs API and extracts only the valueable information and 
+This lambda gets raw data from the get_docs API and extracts only the valuable information and 
 inserts that information into an aurora db. 
 """
 
 # These types will be used if no other types are provided.
 DEFAULT_TYPES = [
+    "ADType",
+    "BitbucketType"
     "DayRatingType",
     "EventRatingType",
     "EventType",
     "GithubType",
-    "SlackType",
-    "SlackEmojiType",
-    "UBWType",
     "KnowitlabsType",
-    "YrType",
-    "TwitterSearchType",
-    "TwitterAccountType",
-    "ADType",
-    "LinkedInPageStatisticsBySeniorityType",
-    "LinkedInPageStatisticsByCountryType",
-    "LinkedInPageStatisticsByIndustryType",
-    "LinkedInPageStatisticsByStaffCountRangeType",
-    "LinkedInPageStatisticsByRegionType",
-    "LinkedInPageStatisticsByFunctionType",
-    "LinkedInPageStatisticsTotalType",
+    "LinkedInDailyFollowerStatsType",
+    "LinkedInDailyPageStatsType",
+    "LinkedInDailyShareStatsType",
+    "LinkedInFollowerCountsByCountryType",
+    "LinkedInFollowerCountsByFunctionType",
+    "LinkedInFollowerCountsByIndustryType",
     "LinkedInFollowerCountsByRegionType",
     "LinkedInFollowerCountsBySeniorityType",
-    "LinkedInFollowerCountsByIndustryType",
     "LinkedInFollowerCountsByStaffCountRangeType",
-    "LinkedInFollowerCountsByFunctionType",
-    "LinkedInFollowerCountsByCountryType",
+    "LinkedInPageStatisticsByCountryType",
+    "LinkedInPageStatisticsByFunctionType",
+    "LinkedInPageStatisticsByIndustryType",
+    "LinkedInPageStatisticsByRegionType",
+    "LinkedInPageStatisticsBySeniorityType",
+    "LinkedInPageStatisticsByStaffCountRangeType",
+    "LinkedInPageStatisticsTotalType",
     "LinkedInTotalShareStatisticsType",
-    "LinkedInDailyFollowerStatsType",
-    "LinkedInDailyShareStatsType",
-    "LinkedInDailyPageStatsType",
+    "SlackEmojiType",
+    "SlackType",
     "SnappySenseType",
+    "TwitterAccountType",
+    "TwitterSearchType",
+    "UBWType",
+    "YrType",
 ]
 
 # Assume running hourly by default. Request the last 1h10m of data.
@@ -147,7 +148,8 @@ def insert_data_into_db(sql_connection, datas, type):
 
         params = ", ".join(param_list)
         columns = "`" + "`, `".join(column_list) + "`"
-        sql = "INSERT INTO `" + type + "` (" + columns + ") VALUES (" + params + ");"
+        sql = "INSERT INTO `" + type + \
+            "` (" + columns + ") VALUES (" + params + ");"
         try:
             res = cursor.execute(sql, data)
             counter += res
@@ -217,7 +219,8 @@ def main(types, timestamp_from, timestamp_to):
         docs = fetch_data_url(url)
         sql_type = get_sql_type(type)
         sql_format, n_errors = get_relevant_attrs(docs, sql_type, connection)
-        n_records, n_duplicates = insert_data_into_db(connection, sql_format, sql_type)
+        n_records, n_duplicates = insert_data_into_db(
+            connection, sql_format, sql_type)
         counter += n_records
         duplicates += n_duplicates
         errors += n_errors

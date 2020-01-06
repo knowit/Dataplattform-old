@@ -27,22 +27,24 @@ class JiraUtilTestCase(unittest.TestCase):
         input_data = {
             'issues': [
                 {
-                    "fields": {
+                    'fields': {
                         'created': 'a date',
                         'labels': ['a customer'],
                         'status': {
                             'name': 'accepted'
                         }
-                    }
+                    },
+                    'key': 'SALG-50'
                 },
                 {
-                    "fields": {
+                    'fields': {
                         'created': 'a date',
-                        'labels': [],
+                        'labels': [''],
                         'status': {
                             'name': 'accepted'
                         }
-                    }
+                    },
+                    'key': 'SALG-51'
                 }
             ]
         }
@@ -51,12 +53,14 @@ class JiraUtilTestCase(unittest.TestCase):
             {
                 'timestamp': 'a date',
                 'customer': 'a customer',
-                'status': 'accepted'
+                'status': 'accepted',
+                'issue': 'SALG-50'
             },
             {
                 'timestamp': 'a date',
                 'customer': '',
-                'status': 'accepted'
+                'status': 'accepted',
+                'issue': 'SALG-51'
             }
         ]
         self.assertListEqual(stripped_data, expected_data)
@@ -76,7 +80,7 @@ class JiraUtilTestCase(unittest.TestCase):
 
     def test_create_params_dict_returns_a_dict_with_the_expected_format(self):
         params = {
-            'jql': 'project=SALG',
+            'jql': "project=SALG and status != 'Rejected'",
             'fields': 'status,created,labels',
             'status/name': 'Rejected',
             'maxResults': 500,

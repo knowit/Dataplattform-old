@@ -20,7 +20,7 @@ def handle_http_request(request_function: Callable) -> object:
 
 
 def create_params_dict(
-        jql: str = 'project=SALG',
+        jql: str = "project=SALG and status != 'Rejected'",
         start_at: int = 0,
         max_results: int = 500
 ) -> dict:
@@ -46,7 +46,8 @@ def strip_data(data: list) -> list:
             customer = item['fields']['labels'][0]
         issue = {'timestamp': item['fields']['created'],
                  'customer': customer,
-                 'status': item['fields']['status']['name']}
+                 'status': item['fields']['status']['name'],
+                 'issue': item['key']}
         stripped.append(issue)
     return stripped
 

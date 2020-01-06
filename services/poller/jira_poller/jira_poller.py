@@ -53,7 +53,7 @@ def handle_request_status(data: object) -> dict:
 
 
 def poll_daily_jira_data(timestamp: str) -> object:
-    jql = f'project=SALG and created > {timestamp}'
+    jql = f"project=SALG and status != 'Rejected' and created > {timestamp}"
     get_response = jira_util.handle_http_request(
         lambda: jira_util.get_sales_data_from_jira(
             url=JIRA_URL,

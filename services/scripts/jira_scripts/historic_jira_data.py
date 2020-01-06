@@ -3,10 +3,11 @@ import itertools
 import os
 
 from services.poller.jira_poller import jira_util
-
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path='credentials.env')
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+
+load_dotenv(dotenv_path=os.path.join(BASEDIR, '.env'))
 
 JIRA_URL = os.getenv("DATAPLATTFORM_JIRA_SALES_URL")
 JIRA_USERNAME = os.getenv("DATAPLATTFORM_JIRA_SALES_USERNAME")

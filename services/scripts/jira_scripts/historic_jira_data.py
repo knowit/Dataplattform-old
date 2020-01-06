@@ -8,13 +8,14 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='credentials.env')
 
-JIRA_URL = os.getenv("JIRA_URL")
-JIRA_USERNAME = os.getenv("JIRA_USERNAME")
-JIRA_PASSWORD = os.getenv("JIRA_PASSWORD")
+JIRA_URL = os.getenv("DATAPLATTFORM_JIRA_SALES_URL")
+JIRA_USERNAME = os.getenv("DATAPLATTFORM_JIRA_SALES_USERNAME")
+JIRA_PASSWORD = os.getenv("DATAPLATTFORM_JIRA_SALES_PASSWORD")
 
 JIRA_SALES_TYPE = "JiraSalesType"
-INGEST_URL = os.getenv("INGEST_URL") + JIRA_SALES_TYPE
-INGEST_API_KEY = os.getenv("INGEST_API_KEY")
+if os.getenv("DATAPLATTFORM_INGEST_URL"):
+    INGEST_URL = os.getenv("DATAPLATTFORM_INGEST_URL") + JIRA_SALES_TYPE
+INGEST_API_KEY = os.getenv("DATAPLATTFORM_INGEST_APIKEY")
 
 
 def get_jira_data() -> object:

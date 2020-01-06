@@ -108,9 +108,7 @@ def get_commits(repo):
         del commit["author"]
         commit["repo"] = repo
 
-    for commit in commits:
-
-        # Make sure commits are in order with olderst first and newest last
+    # Make sure commits are in order with olderst first and newest last
     commits = sorted(commits, key=lambda it: it["committerTimestamp"])
 
     return commits
@@ -170,6 +168,8 @@ def poll():
     for repo in repos:
         repo_commits = get_commits(repo)
         post_commits(repo_commits, repo)
+
+    return True
 
 
 def post_commits(commits, repo):

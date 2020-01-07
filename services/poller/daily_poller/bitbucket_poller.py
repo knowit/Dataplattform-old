@@ -107,6 +107,10 @@ def get_commits(repo):
         del commit["committer"]
         del commit["author"]
         commit["repo"] = repo
+        # There are trailing zeros in the timestamps from bitbucket. Get rid of
+        # those to get valid unix timestamps
+        commit["authorTimestamp"] //= 1000
+        commit["committerTimestamp"] //= 1000
 
     # Make sure commits are in order with olderst first and newest last
     commits = sorted(commits, key=lambda it: it["committerTimestamp"])

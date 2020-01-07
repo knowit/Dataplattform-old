@@ -81,8 +81,7 @@ class JiraUtilTestCase(unittest.TestCase):
     def test_create_params_dict_returns_a_dict_with_the_expected_format(self):
         params = {
             'jql': "project=SALG and status != 'Rejected'",
-            'fields': 'status,created,labels',
-            'status/name': 'Rejected',
+            'fields': 'labels, status, created, updated',
             'maxResults': 500,
             'startAt': 0
         }

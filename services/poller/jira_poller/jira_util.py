@@ -24,7 +24,7 @@ def create_params_dict(
         start_at: int = 0,
         max_results: int = 500
 ) -> dict:
-    return {'jql': jql, 'fields': 'status,created,labels', 'status/name': 'Rejected',
+    return {'jql': jql, 'fields': 'labels, status, created, updated',
             'maxResults': max_results, 'startAt': start_at}
 
 

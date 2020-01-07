@@ -13,7 +13,7 @@ inserts that information into an aurora db.
 # These types will be used if no other types are provided.
 DEFAULT_TYPES = [
     "ADType",
-    "BitbucketType"
+    "BitbucketType",
     "DayRatingType",
     "EventRatingType",
     "EventType",

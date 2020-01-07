@@ -8,6 +8,7 @@ class BitbucketType(AbstractType):
         ("authorTimestamp", int): ["data", "authorTimestamp"],
         ("committerTimestamp", int): ["data", "committerTimestamp"],
         ("message", str): ["data", "message"],
-        ("parentCommitId", str): ["data", "parents", "id"],
-        ("parentCommitDisplayId", str): ["data", "parents", "displayId"],
+        # ("parentCommitId", str): ["data", "parents", "id"],
+        # ("parentCommitDisplayId", str): ["data", "parents", "displayId"],
+        ("repositoryName", str): ["data", "repo", "name"],
         ("repositoryId", int): ["data", "repo", "id"]}

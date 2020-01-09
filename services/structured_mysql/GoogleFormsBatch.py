@@ -25,7 +25,7 @@ def main():
     db=os.getenv("DATAPLATTFORM_AURORA_DB_NAME"),
     charset='utf8mb4',
     cursorclass=pymysql.cursors.DictCursor)
-    
+
     forms = {}
     questions = []
     answers = []

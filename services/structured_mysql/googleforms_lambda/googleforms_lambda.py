@@ -1,13 +1,9 @@
-import json
-from typing import Dict, Union
-import pymysql
 import os
-from batch_job_aurora.batch_job_aurora import format_url, fetch_data_url
-from datetime import datetime as dt
 from dotenv import load_dotenv
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
+import json
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(dotenv_path=os.path.join(BASEDIR, '.env'))
@@ -28,19 +24,16 @@ Answer = Base.classes.GoogleFormsAnswerType
 
 session = Session(engine)
 
-DEFAULT_TIMESTAMP_TO = timestamp = int(dt.now().timestamp())
-DEFAULT_TIMESTAMP_FROM = 1478399468
+def handler(event, context):
 
-def main():
-    base_url = os.getenv("DATAPLATTFORM_FETCH_URL")
-    url = format_url(base_url, 'GoogleFormsType', DEFAULT_TIMESTAMP_FROM, DEFAULT_TIMESTAMP_TO)
-    docs = fetch_data_url(url)
+    sns_message = json.loads(s=event['Records'][0]['Sns']['Message'])
+    docs = sns_message['data']
 
     forms = {}
     questions = []
     answers = []
 
-    records = sorted([doc['data'] for doc in docs], key = lambda i: i['responseTimestamp'])
+    records = sorted(docs, key = lambda i: i['responseTimestamp'])
 
     for record in records:
         forms[record['formId']] = {
@@ -76,8 +69,8 @@ def main():
                 continue
             if (result.text_question != questions[key]['text_question'] or result.type != questions[key]['question_type']):
                 questions[key]['version'] = result.version + 1
-                session.add(Question(unique_id = questions[key]['unique_id'], form_id = questions[key]['form_id'], \
-                    text_question=questions[key]['text_question'], type=questions[key]['question_type'], version=questions[key]['version'], form_question_id = questions[key]['form_question_id']))
+                session.add(Question(unique_id = questions[key]['unique_id'], form_id = questions[key]['form_id'], text_question=questions[key]['text_question'], \
+                    type=questions[key]['question_type'], version=questions[key]['version'], form_question_id = questions[key]['form_question_id']))
                 session.commit()
             else:
                 for answer in answers:
@@ -99,5 +92,3 @@ def main():
                 session.commit()
     finally:
         session.close()
-
-main()

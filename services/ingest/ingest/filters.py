@@ -1,6 +1,8 @@
 import json
 from ingest.ingest_util import IngestUtil
 import re
+import boto3
+import os
 
 
 def filter_github(data):
@@ -105,6 +107,21 @@ def filter_slack_emoji(data):
 
     return json.dumps(document)
 
+def filter_googleForms(data):
+    sns = boto3.client('sns')
+
+    sns.publish(
+        TopicArn=os.getenv("DATAPLATTFORM_PUBLISH_GFORMS"),
+        Message=encapsule_data_with_json(data)
+    )
+    return data
+
+def encapsule_data_with_json(data: list) -> str:
+    dictionary = {
+        'default': "Publish googleForms events",
+        'data': data
+    }
+    return json.dumps(dictionary)
 
 """
 Map of optional filter functions for data types. Value is a function that returns a redacted
@@ -113,5 +130,6 @@ version of the data point, or None if the data point should be ignored.
 filter = {
     "GithubType": filter_github,
     "SlackType": filter_slack,
-    "SlackEmojiType": filter_slack_emoji
+    "SlackEmojiType": filter_slack_emoji,
+    "GoogleFormsType": filter_googleForms
 }

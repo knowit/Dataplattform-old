@@ -33,6 +33,41 @@ class HistoricJiraDataTestCase(unittest.TestCase):
         historic_jira_data.get_jira_data()
         self.assertEqual(mock_sys_exit.call_count, 20)
 
+    @patch('services.poller.jira_poller.jira_util.handle_http_request')
+    def test_post_to_ingest_loop_should_call_handle_http_request_3_times(self, mock_handle_http_request):
+        mock_data = [1, 2, 3]
+        mock_object = mock.Mock()
+        mock_object.status_code = 200
+        mock_handle_http_request.return_value = mock_object
+        historic_jira_data.post_to_ingest_loop(data=mock_data, ingest_url='mock url', ingest_api_key='mock api key')
+        self.assertEqual(mock_handle_http_request.call_count, 3)
+
+    @patch('services.poller.jira_poller.jira_util.handle_http_request')
+    @patch('sys.exit')
+    def test_post_to_ingest_loop_should_call_sys_exit_when_return_value_is_none(
+            self,
+            mock_exit,
+            mock_handle_http_request
+    ):
+        historic_jira_data.post_to_ingest_loop(data=[1], ingest_url='mock url', ingest_api_key='mock api key')
+        self.assertEqual(mock_handle_http_request.call_count, 1)
+        self.assertEqual(mock_exit.call_count, 1)
+
+    @patch('services.poller.jira_poller.jira_util.handle_http_request')
+    @patch('sys.exit')
+    def test_post_to_ingest_loop_should_call_sys_exit_when_status_code_is_not_200(
+            self,
+            mock_exit,
+            mock_handle_http_request
+    ):
+        mock_data = [1]
+        mock_object = mock.Mock()
+        mock_object.status_code = 500
+        mock_handle_http_request.return_value = mock_object
+        historic_jira_data.post_to_ingest_loop(data=mock_data, ingest_url='mock url', ingest_api_key='mock api key')
+        self.assertEqual(mock_handle_http_request.call_count, 1)
+        self.assertEqual(mock_exit.call_count, 1)
+
 
 if __name__ == '__main__':
     unittest.main()

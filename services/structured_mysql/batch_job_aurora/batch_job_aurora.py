@@ -42,7 +42,6 @@ DEFAULT_TYPES = [
     "LinkedInDailyShareStatsType",
     "LinkedInDailyPageStatsType",
     "SnappySenseType",
-    "JiraSalesType",
 ]
 
 # Assume running hourly by default. Request the last 1h10m of data.

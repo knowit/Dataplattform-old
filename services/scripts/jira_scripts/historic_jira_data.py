@@ -1,6 +1,7 @@
 import sys
 import itertools
 import os
+import requests
 
 from services.poller.jira_poller import jira_util
 from dotenv import load_dotenv
@@ -19,6 +20,21 @@ if os.getenv("DATAPLATTFORM_INGEST_URL"):
 INGEST_API_KEY = os.getenv("DATAPLATTFORM_INGEST_APIKEY")
 
 
+def post_to_ingest_loop(data: list, ingest_url: str, ingest_api_key: str):
+    for i, issue in enumerate(data):
+        print('issue:', i)
+        post_response = jira_util.handle_http_request(
+            request_function=lambda: jira_util.post_to_ingest(
+                url=ingest_url,
+                api_key=ingest_api_key,
+                data=issue
+            )
+        )
+    if post_response.status_code != 200:
+        print(post_response.status_code)
+        sys.exit()
+
+
 def get_jira_data() -> object:
     data = []
     max_results = 500
@@ -26,11 +42,10 @@ def get_jira_data() -> object:
     for i in range(0, max_total_number_of_jira_issues, max_results):
 
         get_response = jira_util.handle_http_request(
-            lambda: jira_util.get_sales_data_from_jira(
+            lambda: requests.get(
                 url=JIRA_URL,
-                username=JIRA_USERNAME,
-                password=JIRA_PASSWORD,
-                params=jira_util.create_params_dict(start_at=i, max_results=max_results)
+                params=jira_util.create_params_dict(start_at=i, max_results=max_results),
+                auth=(JIRA_USERNAME, JIRA_PASSWORD)
             )
         )
         if get_response.status_code != 200:
@@ -45,9 +60,15 @@ def get_jira_data() -> object:
 def main():
     data = get_jira_data()
     flattened_data = list(itertools.chain.from_iterable(data))
-    flattened_data.sort(key=lambda x: x['timestamp'])
+    flattened_data.sort(key=lambda x: x['updated'])
 
-    jira_util.post_to_ingest_loop(data=flattened_data, ingest_url=INGEST_URL, ingest_api_key=INGEST_API_KEY)
-    jira_util.upload_last_inserted_doc(timestamp=flattened_data[-1]['timestamp'], data_type=JIRA_SALES_TYPE)
+    post_to_ingest_loop(data=flattened_data, ingest_url=INGEST_URL, ingest_api_key=INGEST_API_KEY)
 
-# main()
+    response = jira_util.publish_event_to_sns(flattened_data)
+    print("////////////////////////////////RESPONSE//////////////////////////////")
+    print(response)
+
+    jira_util.upload_last_inserted_doc(timestamp=flattened_data[-1]['updated'], data_type=JIRA_SALES_TYPE)
+
+
+main()

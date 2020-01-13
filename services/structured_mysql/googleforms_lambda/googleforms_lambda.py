@@ -92,3 +92,8 @@ def handler(event, context):
                 session.commit()
     finally:
         session.close()
+
+    return {
+        'statusCode': 200,
+        'body': 'Done'
+    }

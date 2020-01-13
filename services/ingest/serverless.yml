@@ -70,7 +70,6 @@ functions:
       DATAPLATTFORM_UPDATE_URL:
         'Fn::ImportValue': ${self:custom.project}-update-event-url
       DATAPLATTFORM_PUBLISH_GFORMS: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.project}-googleforms
-
     events:
       - http:
           path: dataplattform_ingest/{type}
@@ -154,14 +153,14 @@ resources:
                   Resource:
                     - 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
           - PolicyName: ${self:custom.project}-snsPublishGoogleFormsPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "sns:Publish"
-                  - "sns:ListTopics"
-                Resource: "*"
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "sns:Publish"
+                    - "sns:ListTopics"
+                  Resource: "*"
     ingestMiddleManRole:
       Type: AWS::IAM::Role
       Properties:
@@ -195,3 +194,4 @@ resources:
 
 plugins:
   - serverless-stack-output
+  - serverless-pseudo-parameters

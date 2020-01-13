@@ -110,11 +110,13 @@ def filter_slack_emoji(data):
 def filter_googleForms(data):
     sns = boto3.client('sns')
 
+    data = json.loads(data)
+
     sns.publish(
         TopicArn=os.getenv("DATAPLATTFORM_PUBLISH_GFORMS"),
         Message=encapsule_data_with_json(data)
     )
-    return data
+    return json.dumps(data)
 
 def encapsule_data_with_json(data: list) -> str:
     dictionary = {

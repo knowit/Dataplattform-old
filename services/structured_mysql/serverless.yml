@@ -150,7 +150,7 @@ functions:
   google_forms_lambda:
     handler: googleforms_lambda.handler
     description: Receives SNS events with google forms data and inserts events in Aurora
-    module: google_forms_lambda
+    module: googleforms_lambda
     name: ${self:custom.project}-googleforms-lambda
     package:
       include:

@@ -14,6 +14,14 @@ db_user = os.getenv("DATAPLATTFORM_AURORA_USER")
 db_password = os.getenv("DATAPLATTFORM_AURORA_PASSWORD")
 db_db = os.getenv("DATAPLATTFORM_AURORA_DB_NAME")
 
+Base = automap_base()
+engine = create_engine(f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_db}?charset=utf8mb4')
+Base.prepare(engine, reflect=True)
+
+Form = Base.classes.GoogleFormsType
+Question = Base.classes.GoogleFormsQuestionType
+Answer = Base.classes.GoogleFormsAnswerType
+
 def split_and_sort_records(docs):
     forms = {}
     questions = []
@@ -41,21 +49,13 @@ def split_and_sort_records(docs):
 
 def handler(event, context):
     docs = json.loads(s=event['Records'][0]['Sns']['Message'])
-
     docs = docs['data']
 
     forms, questions, answers = split_and_sort_records(docs)
 
+    session = Session(engine)
+
     try: 
-        Base = automap_base()
-        engine = create_engine(f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_db}?charset=utf8mb4')
-        Base.prepare(engine, reflect=True)
-        session = Session(engine)
-
-        Form = Base.classes.GoogleFormsType
-        Question = Base.classes.GoogleFormsQuestionType
-        Answer = Base.classes.GoogleFormsAnswerType
-
         for key in list(forms):
             result = session.query(Form).filter(Form.id == key).first()
             if result is None:
@@ -93,8 +93,7 @@ def handler(event, context):
                 session.commit()
     finally:
         session.close()
-
     return {
-        'statusCode': 200,
-        'body': 'Done'
+            'statusCode': 200,
+            'body': 'Done'
     }

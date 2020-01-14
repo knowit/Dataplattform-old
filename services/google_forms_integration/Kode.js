@@ -3,6 +3,7 @@ var DATAPLATTFORM_INGEST_APIKEY = PropertiesService.getScriptProperties().getPro
 var DATAPLATTFORM_INGEST_URL = PropertiesService.getScriptProperties().getProperty('dataplattform_ingest_url');
 
 function postFormDataToDynamoDB(formId, timestamp, row) {
+  var file = DriveApp.getFileById(formId);
   var form = FormApp.openById(formId);
   var formResponses = form.getResponses(timestamp);
   updateSpreadsheetTimestamp(SPREADSHEET, row, new Date());
@@ -16,6 +17,7 @@ function postFormDataToDynamoDB(formId, timestamp, row) {
         'formId': form.getId(),
         'formTitle': form.getTitle(),
         'formDescription': form.getDescription(),
+        'formCreated': file.getDateCreated().valueOf(),
         'responseId': formResponse.getId(),
         'responseTimestamp': formResponse.getTimestamp().valueOf(),
         'responseQuestion': itemResponse.getItem().getTitle(),

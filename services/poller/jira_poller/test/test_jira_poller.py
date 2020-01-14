@@ -114,7 +114,7 @@ class JiraPollerTestCase(unittest.TestCase):
     ):
         mock_fetch_last_inserted_doc.return_value = mock.Mock()
         mock_handle_request_status.return_value = None
-        mock_strip_data.return_value = [{'timestamp': 1}, {'timestamp': 2}]
+        mock_strip_data.return_value = [{'updated': 1}, {'updated': 2}]
         mock_format_string_containing_iso_date.return_value = mock.Mock()
         mock_post_jira_data_to_ingest.return_value = 200
         mock_publish_event_to_sns.return_value = 200

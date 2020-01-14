@@ -62,7 +62,7 @@ def strip_data(data: list) -> list:
         issue = {
             'issue': item['key'],
             'customer': customer,
-            'status': item['fields']['status']['name'],
+            'issue_status': item['fields']['status']['name'],
             'created': item['fields']['created'],
             'updated': item['fields']['updated']
         }

@@ -2,10 +2,10 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
-import historic_jira_data
+import historic_jira_data_util
 
 
-class HistoricJiraDataTestCase(unittest.TestCase):
+class HistoricJiraDataUtilTestCase(unittest.TestCase):
 
     @patch('services.poller.jira_poller.jira_util.strip_data')
     @patch('services.poller.jira_poller.jira_util.handle_http_request')
@@ -16,7 +16,7 @@ class HistoricJiraDataTestCase(unittest.TestCase):
         mock_handle_http_request.return_value = mock_object
 
         mock_strip_data.return_value = ['mock mock']
-        data = historic_jira_data.get_jira_data()
+        data = historic_jira_data_util.get_jira_data()
         self.assertEqual(mock_handle_http_request.call_count, 20)
         self.assertEqual(len(data), 20)
 
@@ -30,7 +30,7 @@ class HistoricJiraDataTestCase(unittest.TestCase):
         mock_object = mock.Mock()
         mock_object.status_code = 404
         mock_handle_http_request.return_value = mock_object
-        historic_jira_data.get_jira_data()
+        historic_jira_data_util.get_jira_data()
         self.assertEqual(mock_sys_exit.call_count, 20)
 
     @patch('services.poller.jira_poller.jira_util.handle_http_request')
@@ -39,7 +39,8 @@ class HistoricJiraDataTestCase(unittest.TestCase):
         mock_object = mock.Mock()
         mock_object.status_code = 200
         mock_handle_http_request.return_value = mock_object
-        historic_jira_data.post_to_ingest_loop(data=mock_data, ingest_url='mock url', ingest_api_key='mock api key')
+        historic_jira_data_util.post_to_ingest_loop(data=mock_data, ingest_url='mock url',
+                                                    ingest_api_key='mock api key')
         self.assertEqual(mock_handle_http_request.call_count, 3)
 
     @patch('services.poller.jira_poller.jira_util.handle_http_request')
@@ -49,7 +50,7 @@ class HistoricJiraDataTestCase(unittest.TestCase):
             mock_exit,
             mock_handle_http_request
     ):
-        historic_jira_data.post_to_ingest_loop(data=[1], ingest_url='mock url', ingest_api_key='mock api key')
+        historic_jira_data_util.post_to_ingest_loop(data=[1], ingest_url='mock url', ingest_api_key='mock api key')
         self.assertEqual(mock_handle_http_request.call_count, 1)
         self.assertEqual(mock_exit.call_count, 1)
 
@@ -64,7 +65,8 @@ class HistoricJiraDataTestCase(unittest.TestCase):
         mock_object = mock.Mock()
         mock_object.status_code = 500
         mock_handle_http_request.return_value = mock_object
-        historic_jira_data.post_to_ingest_loop(data=mock_data, ingest_url='mock url', ingest_api_key='mock api key')
+        historic_jira_data_util.post_to_ingest_loop(data=mock_data, ingest_url='mock url',
+                                                    ingest_api_key='mock api key')
         self.assertEqual(mock_handle_http_request.call_count, 1)
         self.assertEqual(mock_exit.call_count, 1)
 

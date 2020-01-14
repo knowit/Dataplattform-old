@@ -55,14 +55,14 @@ class JiraUtilTestCase(unittest.TestCase):
             {
                 'issue': 'SALG-50',
                 'customer': 'a customer',
-                'status': 'accepted',
+                'issue_status': 'accepted',
                 'created': 'a date',
                 'updated': 'another date',
             },
             {
                 'issue': 'SALG-99',
                 'customer': '',
-                'status': 'accepted',
+                'issue_status': 'accepted',
                 'created': 'a date',
                 'updated': 'another date',
             }

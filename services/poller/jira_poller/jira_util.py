@@ -32,6 +32,8 @@ def publish_event_to_sns(data: list) -> int:
 def handle_http_request(request_function: Callable) -> object:
     try:
         response = request_function()
+        print("////////////////////////////////RESPONSE//////////////////////////////")
+        print("HTTP REQUEST STATUS CODE:", response.status_code)
         response.raise_for_status()
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')

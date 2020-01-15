@@ -1,7 +1,7 @@
 from data_types.AbstractType import AbstractType
 
 
-class MoodBoxType(AbstractType):
+class MoodBox(AbstractType):
     attributes_keep = {
     	("time", int): ["data", "time"],
         ("vote", int): ["data", "vote"]

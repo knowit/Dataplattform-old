@@ -11,7 +11,7 @@ def create_tables_if_not_existing():
     tablename_googleforms_answers = 'GoogleFormsAnswerType'
     try:
         if not (engine.has_table(tablename_googleforms_forms) and engine.has_table(tablename_googleforms_questions) and engine.has_table(tablename_googleforms_answers)):
-            forms = Table(
+            Table(
                 tablename_googleforms_forms,
                 metadata,
                 Column('id', String(100), primary_key=True, nullable=False),
@@ -21,7 +21,7 @@ def create_tables_if_not_existing():
                 Column('owner', String(100)),
                 Column('published_url', String(150)),
             )
-            questions = Table(
+            Table(
                 tablename_googleforms_questions,
                 metadata,
                 Column('unique_id', String(100), primary_key=True, nullable=False),
@@ -31,7 +31,7 @@ def create_tables_if_not_existing():
                 Column('type', String(100)),
                 Column('version', Integer()),
             )
-            answers = Table(
+            Table(
                 tablename_googleforms_answers,
                 metadata,
                 Column('unique_id', String(100), primary_key=True, nullable=False),

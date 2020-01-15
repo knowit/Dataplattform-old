@@ -24,7 +24,7 @@ def poll():
 
     print("Payload:")
     print(data)
-
+    
     sns = boto3.client('sns')
     response = sns.publish(
         TopicArn=os.getenv("DATAPLATTFORM_PUBLISH_EVENT"),

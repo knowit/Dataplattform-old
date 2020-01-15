@@ -1,26 +1,13 @@
-import os
-from dotenv import load_dotenv
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
 import json
+import uuid
+from googleforms_util import create_db_engine
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(dotenv_path=os.path.join(BASEDIR, '.env'))
-
-db_host = os.getenv("DATAPLATTFORM_AURORA_HOST")
-db_port = os.getenv("DATAPLATTFORM_AURORA_PORT")
-db_user = os.getenv("DATAPLATTFORM_AURORA_USER")
-db_password = os.getenv("DATAPLATTFORM_AURORA_PASSWORD")
-db_db = os.getenv("DATAPLATTFORM_AURORA_DB_NAME")
-
+# DB engine is declared outside of the handler in order to be reused between each lambda invocation.
+engine = create_db_engine()
 Base = automap_base()
-engine = create_engine(f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_db}?charset=utf8mb4')
 Base.prepare(engine, reflect=True)
-
-Form = Base.classes.GoogleFormsType
-Question = Base.classes.GoogleFormsQuestionType
-Answer = Base.classes.GoogleFormsAnswerType
 
 def split_and_sort_records(docs):
     forms = {}
@@ -28,38 +15,43 @@ def split_and_sort_records(docs):
     answers = []
     records = sorted(docs, key = lambda i: i['responseTimestamp'])
     for record in records:
+        question_uuid = str(uuid.uuid4())
+        answer_uuid = str(uuid.uuid4())
         forms[record['formId']] = {
             'title': record['formTitle'],
-            'description': record['formDescription'] 
+            'description': record['formDescription'],
+            'created_at': record['formCreated'],
+            'owner': record['formOwner'],
+            'published_url': record['formPublishedUrl']
             }
         questions.append({
-            'unique_id': str(record['questionId'])+str(record['responseTimestamp']),
+            'unique_id': question_uuid,
             'form_id': record['formId'],
             'text_question': record['responseQuestion'],
             'question_type': record['questionType'],
             'form_question_id': record['questionId']
         })
         answers.append({ 
-            'unique_question_id': str(record['questionId'])+str(record['responseTimestamp']),
+            'unique_id': answer_uuid,
+            'unique_question_id': question_uuid,
             'response_id': record['responseId'],
             'text_answer': record['responseAnswer'],
-            'timestamp': record['responseTimestamp']
+            'timestamp': record['responseTimestamp'],
+            'form_id': record['formId']
         })
     return forms, questions, answers
 
-def handler(event, context):
-    docs = json.loads(s=event['Records'][0]['Sns']['Message'])
-    docs = docs['data']
-
-    forms, questions, answers = split_and_sort_records(docs)
-
+def insert_or_update_forms_data(forms, questions, answers):
+    Form = Base.classes.GoogleFormsType
+    Question = Base.classes.GoogleFormsQuestionType
+    Answer = Base.classes.GoogleFormsAnswerType
     session = Session(engine)
-
     try: 
         for key in list(forms):
             result = session.query(Form).filter(Form.id == key).first()
             if result is None:
-                session.add(Form(id=key, title=forms[key]['title'], description=forms[key]['description']))
+                session.add(Form(id=key, title=forms[key]['title'], description=forms[key]['description'], created_at=forms[key]['created_at'], \
+                    owner=forms[key]['owner'], published_url=forms[key]['published_url']))
         for key in range(len(questions)):
             result = session.query(Question).filter(Question.form_question_id == questions[key]['form_question_id'], \
                 Question.form_id == questions[key]['form_id']).order_by(Question.version.desc()).first()
@@ -76,23 +68,30 @@ def handler(event, context):
             else:
                 for answer in answers:
                     answer.update((k, result.unique_id) for k, v in answer.items() if v == questions[key]['unique_id'])
-
         for key in range(len(answers)):
             result = session.query(Answer).filter(Answer.unique_question_id == answers[key]['unique_question_id'], \
                 Answer.response_id == answers[key]['response_id']).order_by(Answer.version.desc()).first()
             if result is None:
                 answers[key]['version'] = 1
-                session.add(Answer(unique_question_id = answers[key]['unique_question_id'], response_id = answers[key]['response_id'], \
-                    text_answer=answers[key]['text_answer'], timestamp=answers[key]['timestamp'], version=answers[key]['version']))
+                session.add(Answer(unique_id = answers[key]['unique_id'], unique_question_id = answers[key]['unique_question_id'], response_id = answers[key]['response_id'], \
+                    text_answer=answers[key]['text_answer'], timestamp=answers[key]['timestamp'], version=answers[key]['version'], form_id=answers[key]['form_id']))
                 session.commit()
                 continue
             if result.text_answer != answers[key]['text_answer']:
                 answers[key]['version'] = result.version + 1
-                session.add(Answer(unique_question_id = answers[key]['unique_question_id'], response_id = answers[key]['response_id'], \
-                    text_answer=answers[key]['text_answer'], timestamp=answers[key]['timestamp'], version=answers[key]['version']))
+                session.add(Answer(unique_id = answers[key]['unique_id'], unique_question_id = answers[key]['unique_question_id'], response_id = answers[key]['response_id'], \
+                    text_answer=answers[key]['text_answer'], timestamp=answers[key]['timestamp'], version=answers[key]['version'], form_id=answers[key]['form_id']))
                 session.commit()
     finally:
         session.close()
+    
+def handler(event, context):
+    docs = json.loads(s=event['Records'][0]['Sns']['Message'])
+    docs = docs['data']
+
+    forms, questions, answers = split_and_sort_records(docs)
+    insert_or_update_forms_data(forms,questions,answers)
+
     return {
             'statusCode': 200,
             'body': 'Done'

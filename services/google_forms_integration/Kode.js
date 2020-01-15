@@ -7,7 +7,7 @@ function postFormDataToDynamoDB(formId, timestamp, row) {
   var form = FormApp.openById(formId);
   var formResponses = form.getResponses(timestamp);
   updateSpreadsheetTimestamp(SPREADSHEET, row, new Date());
-  
+
   for (var i = 0; i < formResponses.length; i++) {
     var formResponse = formResponses[i];
     var itemResponses = formResponse.getItemResponses();
@@ -17,9 +17,11 @@ function postFormDataToDynamoDB(formId, timestamp, row) {
         'formId': form.getId(),
         'formTitle': form.getTitle(),
         'formDescription': form.getDescription(),
-        'formCreated': file.getDateCreated().valueOf(),
+        'formCreated': Math.floor(file.getDateCreated().valueOf() / 1000),
+        'formOwner': file.getOwner().getName(),
+        'formPublishedUrl': form.getPublishedUrl(),
         'responseId': formResponse.getId(),
-        'responseTimestamp': formResponse.getTimestamp().valueOf(),
+        'responseTimestamp': Math.floor(formResponse.getTimestamp().valueOf() / 1000),
         'responseQuestion': itemResponse.getItem().getTitle(),
         'responseAnswer': itemResponse.getResponse(),
         'questionId': itemResponse.getItem().getId(),
@@ -27,9 +29,9 @@ function postFormDataToDynamoDB(formId, timestamp, row) {
       };
       data = [data];
       var options = {
-        'method' : 'post',
+        'method': 'post',
         'contentType': 'application/json',
-        'payload' : JSON.stringify(data),
+        'payload': JSON.stringify(data),
         'headers': { 'x-api-key': DATAPLATTFORM_INGEST_APIKEY }
       };
       UrlFetchApp.fetch(DATAPLATTFORM_INGEST_URL, options);
@@ -77,38 +79,39 @@ function doGet(e) {
 function removeForm(spreadsheetId, formId) {
   // Don't allow removal of a form the user does not have access to
   if (formExists(spreadsheetId, formId) && getAccessToForm(formId)) {
-  //if (formExists(spreadsheetId, formId)) {
-      Sheets.Spreadsheets.batchUpdate({"requests": 
-                                       [{
-                                             "deleteDimension": {
-                                               "range": {
-                                                 "dimension": "ROWS",
-                                                 "startIndex": row,
-                                                 "endIndex": row+1
-                                               }
-                                             }
-                                           },
-                                         ],
-                                        }, spreadsheetId);
-        return true;
-    }
+    //if (formExists(spreadsheetId, formId)) {
+    Sheets.Spreadsheets.batchUpdate({
+      "requests":
+        [{
+          "deleteDimension": {
+            "range": {
+              "dimension": "ROWS",
+              "startIndex": row,
+              "endIndex": row + 1
+            }
+          }
+        },
+        ],
+    }, spreadsheetId);
+    return true;
+  }
   return false;
 }
-                                       
-                                     
+
+
 function runAtInterval() {
   readDataFromSpreadsheet(SPREADSHEET)
 }
 
 function readDataFromSpreadsheet(spreadsheetId) {
-  var response = Sheets.Spreadsheets.Values.get(spreadsheetId,'A:B');
+  var response = Sheets.Spreadsheets.Values.get(spreadsheetId, 'A:B');
   for (row in response.values) {
     row = parseInt(row);
     // Skip headers
     if (row == 0) {
       continue;
     }
-    postFormDataToDynamoDB(response.values[row][0], new Date(response.values[row][1]), row+1);
+    postFormDataToDynamoDB(response.values[row][0], new Date(response.values[row][1]), row + 1);
   }
 }
 
@@ -137,33 +140,33 @@ function updateSpreadsheetTimestamp(spreadsheetId, row, timestamp) {
     valueInputOption: 'RAW'
   });
 }
-      
+
 function formExists(spreadsheetId, formId) {
-  var response = Sheets.Spreadsheets.Values.get(spreadsheetId,'A:A');
+  var response = Sheets.Spreadsheets.Values.get(spreadsheetId, 'A:A');
   for (row in response.values) {
     if (response.values[row][0] == formId) {
-        return parseInt(row);
+      return parseInt(row);
     }
   }
   return false;
 }
-    
+
 function onInstall(e) {
   onOpen(e);
 }
-    
+
 // Add a custom menu to the active form, including a separator and a sub-menu.
 function onOpen(e) {
   FormApp.getUi()
-      .createMenu('Dataplattform')
-      .addItem('Add to dataplatform', 'addToPlatform')
-      .addItem('Remove from dataplatform', 'removeFromPlatform')
-      .addToUi();
+    .createMenu('Dataplattform')
+    .addItem('Start collecting data from this form', 'addToPlatform')
+    .addItem('Stop collecting data from this form')
+    .addToUi();
 }
 
 function addToPlatform() {
   var formId = FormApp.getActiveForm().getId();
-  
+
   var isValidForm = getAccessToForm(formId);
   if (!isValidForm) {
     var output = 'We could not find your form :( Please check that the Id is correct and that it is not a quiz!';
@@ -175,10 +178,10 @@ function addToPlatform() {
     writeToSpreadsheet(SPREADSHEET, formId);
     var output = 'Your form has been added to the dataplatform and will now be polled for new responses indefintely :)!';
   }
-  
-  
+
+
   var htmlOutput = HtmlService
-  .createHtmlOutput(output)
+    .createHtmlOutput(output)
     .setWidth(250)
     .setHeight(300);
   FormApp.getUi().showModalDialog(htmlOutput, 'Result');
@@ -186,16 +189,16 @@ function addToPlatform() {
 
 function removeFromPlatform() {
   var formId = FormApp.getActiveForm().getId();
-  
+
   if (removeForm(SPREADSHEET, formId)) {
-        var output = 'Responses will no longer be collected from your form!';
+    var output = 'Responses will no longer be collected from your form!';
   }
   else {
     var output = 'Could not find your form, are you sure it\'s been added to the dataplatform already? :)';
-                                          }
-  
+  }
+
   var htmlOutput = HtmlService
-  .createHtmlOutput(output)
+    .createHtmlOutput(output)
     .setWidth(250)
     .setHeight(300);
   FormApp.getUi().showModalDialog(htmlOutput, 'Result');

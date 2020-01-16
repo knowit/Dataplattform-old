@@ -18,7 +18,6 @@ DEFAULT_TYPES = [
     "EventRatingType",
     "EventType",
     "GithubType",
-    "JiraSalesType",
     "KnowitlabsType",
     "LinkedInDailyFollowerStatsType",
     "LinkedInDailyPageStatsType",
@@ -37,6 +36,7 @@ DEFAULT_TYPES = [
     "LinkedInPageStatisticsByStaffCountRangeType",
     "LinkedInPageStatisticsTotalType",
     "LinkedInTotalShareStatisticsType",
+    "MoodBox",
     "SlackEmojiType",
     "SlackType",
     "SnappySenseType",
@@ -68,7 +68,7 @@ def handler(event, context):
     return {
         'statusCode': 200,
         'body': f"{counter} records inserted into Aurora. {n_dupes} duplicates skipped. "
-                f"{n_errors} errors."
+        f"{n_errors} errors."
     }
 
 

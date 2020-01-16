@@ -4,13 +4,36 @@ import json
 import dateutil.parser
 import requests
 from requests.exceptions import HTTPError
+import boto3
+import os
 
 from poller_util import PollerUtil
+
+
+def encapsule_data_with_json(data: list) -> str:
+    dictionary = {
+        'default': "Publish jira events",
+        'data': data
+    }
+    return json.dumps(dictionary)
+
+
+def publish_event_to_sns(data: list) -> int:
+    sns = boto3.client('sns')
+
+    response = sns.publish(
+        TopicArn=os.getenv("DATAPLATTFORM_PUBLISH_JIRA"),
+        Message=encapsule_data_with_json(data),
+    )
+
+    return response['ResponseMetadata']['HTTPStatusCode']
 
 
 def handle_http_request(request_function: Callable) -> object:
     try:
         response = request_function()
+        print("////////////////////////////////RESPONSE//////////////////////////////")
+        print("HTTP REQUEST STATUS CODE:", response.status_code)
         response.raise_for_status()
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
@@ -20,22 +43,16 @@ def handle_http_request(request_function: Callable) -> object:
 
 
 def create_params_dict(
-        jql: str = 'project=SALG',
+        jql: str = "project=SALG and status != 'Rejected'",
         start_at: int = 0,
         max_results: int = 500
 ) -> dict:
-    return {'jql': jql, 'fields': 'status,created,labels', 'status/name': 'Rejected',
-            'maxResults': max_results, 'startAt': start_at}
-
-
-def get_sales_data_from_jira(
-        url: str,
-        username: str,
-        password: str,
-        params: dict
-) -> object:
-    response = requests.get(url=url, params=params, auth=(username, password))
-    return response
+    return {
+        'jql': jql,
+        'fields': 'labels, status, created, updated',
+        'maxResults': max_results,
+        'startAt': start_at
+    }
 
 
 def strip_data(data: list) -> list:
@@ -44,9 +61,13 @@ def strip_data(data: list) -> list:
         customer = ''
         if len(item['fields']['labels']) > 0:
             customer = item['fields']['labels'][0]
-        issue = {'timestamp': item['fields']['created'],
-                 'customer': customer,
-                 'status': item['fields']['status']['name']}
+        issue = {
+            'issue': item['key'],
+            'customer': customer,
+            'issue_status': item['fields']['status']['name'],
+            'created': item['fields']['created'],
+            'updated': item['fields']['updated']
+        }
         stripped.append(issue)
     return stripped
 
@@ -55,20 +76,6 @@ def post_to_ingest(url: str, api_key: str, data: dict) -> object:
     encoded_data = json.dumps(data).encode()
     response = requests.post(url=url, data=encoded_data, headers={'x-api-key': api_key})
     return response
-
-
-def post_to_ingest_loop(data: list, ingest_url: str, ingest_api_key: str):
-    for i, issue in enumerate(data):
-        print('issue:', i)
-        post_response = handle_http_request(
-            request_function=lambda: post_to_ingest(
-                url=ingest_url,
-                api_key=ingest_api_key,
-                data=issue
-            )
-        )
-    if post_response.status_code != 200:
-        sys.exit()
 
 
 def format_string_containing_iso_date(iso_date_string: str) -> str:

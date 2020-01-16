@@ -1,2 +1,4 @@
 # Environments
 *.env
+
+services/scripts/jira_scripts/list_jira_issue_keys.py

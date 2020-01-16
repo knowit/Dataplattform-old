@@ -129,6 +129,7 @@ functions:
       DATAPLATTFORM_JIRA_SALES_USERNAME: ${ssm:dataplattform_jira_sales_username}
       DATAPLATTFORM_JIRA_SALES_PASSWORD: ${ssm:dataplattform_jira_sales_password}
       DATAPLATTFORM_POLLING_STATUS_TABLENAME: ${self:custom.pollingStatusTable}
+      DATAPLATTFORM_PUBLISH_JIRA: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.project}-jira
     events:
       - schedule: rate(1 day)
     vpc:
@@ -239,6 +240,15 @@ resources:
                     - Fn::GetAtt:
                         - PollingStatusTable
                         - Arn
+          - PolicyName: ${self:custom.project}-snsPublishJiraPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "sns:Publish"
+                    - "sns:ListTopics"
+                  Resource: "*"
 
     PollingStatusTable:
       Type: AWS::DynamoDB::Table

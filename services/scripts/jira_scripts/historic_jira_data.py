@@ -18,14 +18,14 @@ def main():
     flattened_data = list(itertools.chain.from_iterable(data))
     flattened_data.sort(key=lambda x: x['updated'])
 
-    # historic_jira_data_util.post_to_ingest_loop(data=flattened_data, ingest_url=INGEST_URL,
-    #                                            ingest_api_key=INGEST_API_KEY)
+    historic_jira_data_util.post_to_ingest_loop(data=flattened_data, ingest_url=INGEST_URL,
+                                                ingest_api_key=INGEST_API_KEY)
 
     response = jira_util.publish_event_to_sns(flattened_data)
     print("////////////////////////////////RESPONSE//////////////////////////////")
     print(response)
 
-    # jira_util.upload_last_inserted_doc(timestamp=flattened_data[-1]['updated'], data_type=JIRA_SALES_TYPE)
+    jira_util.upload_last_inserted_doc(timestamp=flattened_data[-1]['updated'], data_type=JIRA_SALES_TYPE)
 
 
 main()

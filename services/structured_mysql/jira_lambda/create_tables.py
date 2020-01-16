@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 from sqlalchemy.engine import Engine
-from sqlalchemy import MetaData, Table, Column, String, ForeignKey, Sequence, BIGINT, DateTime
+from sqlalchemy import MetaData, Table, Column, String, ForeignKey, Sequence, BIGINT, TIMESTAMP
 
 import create_engine
 
@@ -19,7 +19,7 @@ def create_tables_if_not_existing(engine: Engine):
                 tablename_jira_issue_created,
                 metadata,
                 Column('issue', String(32), primary_key=True, nullable=False),
-                Column('created', DateTime, nullable=False)
+                Column('created', TIMESTAMP, nullable=False)
             )
             issue_updated = Table(
                 tablename_jira_issue_updated,
@@ -31,7 +31,7 @@ def create_tables_if_not_existing(engine: Engine):
                     primary_key=True
                 ),
                 Column('issue', String(32), ForeignKey(issue_created.c.issue), nullable=False),
-                Column('updated', DateTime, nullable=False),
+                Column('updated', TIMESTAMP, nullable=False),
                 Column('issue_status', String(32)),
                 Column('customer', String(200))
             )

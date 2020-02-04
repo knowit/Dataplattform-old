@@ -2,30 +2,6 @@ var SPREADSHEET = PropertiesService.getScriptProperties().getProperty('spreadshe
 var DATAPLATTFORM_INGEST_APIKEY = PropertiesService.getScriptProperties().getProperty('dataplattform_ingest_apikey');
 var DATAPLATTFORM_INGEST_URL = PropertiesService.getScriptProperties().getProperty('dataplattform_ingest_url');
 
-function doGet(e) {
-  var formId = e['parameter']['formId'];
-  var action = e['parameter']['action'];
-  switch (action) {
-    case 'add':
-      var isValidForm = getAccessToForm(formId);
-      if (!isValidForm) {
-        return HtmlService.createHtmlOutput('We could not find your form :( Please check that the Id is correct and that it is not a quiz!');
-      }
-      if (formExists(SPREADSHEET, formId)) {
-        return HtmlService.createHtmlOutput('Your form is already in the platform and can\'t be added again!');
-      }
-      writeToSpreadsheet(SPREADSHEET, formId);
-      return HtmlService.createHtmlOutput('Your form has been added to the dataplatform and will now be polled for new responses indefintely :)!');
-    case 'remove':
-      if (removeForm(SPREADSHEET, formId)) {
-        return HtmlService.createHtmlOutput('Responses will no longer be collected from your form!');
-      }
-      return HtmlService.createHtmlOutput('Could not find your form, are you sure it\'s been added to the dataplatform already? :)');
-    default:
-      return HtmlService.createHtmlOutput('That\'s not a valid action! Valid actions are \'add\' or \'remove\'');
-  }
-}
-
 function onInstall(e) {
   onOpen(e);
 }

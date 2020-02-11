@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-var SPREADSHEET = PropertiesService.getScriptProperties().getProperty('spreadsheet');
-var DATAPLATTFORM_INGEST_APIKEY = PropertiesService.getScriptProperties().getProperty('dataplattform_ingest_apikey');
-var DATAPLATTFORM_INGEST_URL = PropertiesService.getScriptProperties().getProperty('dataplattform_ingest_url');
-
-=======
->>>>>>> googleforms-testing
 function onInstall(e) {
   onOpen(e);
   PropertiesService.getUserProperties().setProperty('scriptActivated', 'false')
@@ -46,6 +39,8 @@ function removeAllData() {
 }
 
 function showQuestionsToInclude() {
+  var form = FormApp.getActiveForm();
+  var userProps = PropertiesService.getUserProperties();
   var valid_form = false;
   if (form.isQuiz()) {
     var valid_form = 'Your form is a quiz and cannot be added!';
@@ -167,19 +162,21 @@ function postFormDataToIngest(apiKey, url, file, form, formResponse, questionsTo
       });
     }
   }
-  var options = {
-    'method': 'post',
-    'contentType': 'application/json',
-    'payload': JSON.stringify(data),
-    'headers': { 'x-api-key': apiKey }
-  };
-  try {
-    UrlFetchApp.fetch(url, options);
-  }
-  catch (e) {
-    console.error(e.name)
-    console.error(e.name + ": " + e.message)
-    console.error("formId: " + form.getId())
+  if (data.length > 0) {
+    var options = {
+      'method': 'post',
+      'contentType': 'application/json',
+      'payload': JSON.stringify(data),
+      'headers': { 'x-api-key': apiKey }
+    };
+    try {
+      UrlFetchApp.fetch(url, options);
+    }
+    catch (e) {
+      console.error(e.name)
+      console.error(e.name + ": " + e.message)
+      console.error("formId: " + form.getId())
+    }
   }
 }
 

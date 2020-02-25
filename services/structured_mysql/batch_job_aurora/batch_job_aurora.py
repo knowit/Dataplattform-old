@@ -15,7 +15,6 @@ DEFAULT_TYPES = [
     "ADType",
     "BitbucketType",
     "DayRatingType",
-    "EventRatingType",
     "EventType",
     "GithubType",
     "KnowitlabsType",

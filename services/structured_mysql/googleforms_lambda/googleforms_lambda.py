@@ -90,6 +90,8 @@ def insert_or_update_forms_data(forms, questions, answers):
                     answer.update((k, result.unique_id) for k, v in answer.items() if v == questions[key]['unique_id'])
 
         for key in range(len(answers)):
+            if (isinstance(answers[key]['text_answer'], list)):
+                answers[key]['text_answer'] = ','.join(answers[key]['text_answer'])
             result = session.query(Answer).filter(
                 Answer.unique_question_id == answers[key]['unique_question_id'],
                 Answer.response_id == answers[key]['response_id']).order_by(Answer.version.desc()).first()
@@ -120,13 +122,25 @@ def insert_or_update_forms_data(forms, questions, answers):
     
     finally:
         session.close()
-    
+
+def remove_forms_from_db(docs):
+    Form = Base.classes.GoogleFormsType
+    session = Session(engine)
+    try: 
+        session.query(Form).filter(Form.id == docs[0]['formId']).delete()
+        session.commit()
+    finally:
+        session.close()
+
 def handler(event, context):
     docs = json.loads(s=event['Records'][0]['Sns']['Message'])
     docs = docs['data']
 
-    forms, questions, answers = split_and_sort_records(docs)
-    insert_or_update_forms_data(forms,questions,answers)
+    if 'deletionProcedure' in docs[0]:
+        remove_forms_from_db(docs)
+    else:
+        forms, questions, answers = split_and_sort_records(docs)
+        insert_or_update_forms_data(forms,questions,answers)
 
     return {
             'statusCode': 200,

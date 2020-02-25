@@ -14,7 +14,6 @@ inserts that information into an aurora db.
 DEFAULT_TYPES = [
     "ADType",
     "BitbucketType",
-    "DayRatingType",
     "EventType",
     "GithubType",
     "KnowitlabsType",
